@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { getPageBanner } from "@/lib/content-source";
+import { getMinisters, getPageBanner } from "@/lib/content-source";
 import Link from "next/link";
 import MinistersDirectory from "@/components/churches/MinistersDirectory";
 
@@ -13,7 +13,10 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function PastorsPage() {
-  const banner = await getPageBanner("Our Ministers");
+  const [banner, ministerGroups] = await Promise.all([
+    getPageBanner("Our Ministers"),
+    getMinisters(),
+  ]);
   return (
     <>
       <section className="relative h-[200px] w-full overflow-hidden md:h-[280px]">
@@ -55,7 +58,7 @@ export default async function PastorsPage() {
 
       <section className="bg-muted-surface py-12 lg:py-16">
         <div className="mx-auto max-w-[1200px] px-4 lg:px-8">
-          <MinistersDirectory />
+          <MinistersDirectory ministerGroups={ministerGroups} />
         </div>
       </section>
 

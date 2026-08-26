@@ -1,14 +1,20 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, MapPin, ChevronDown } from "lucide-react";
-import { ministerGroups, totalMinisters } from "@/data/ministers";
+import Link from "next/link";
+import { Search, MapPin, ChevronDown, ChevronRight } from "lucide-react";
+import type { MinisterGroup } from "@/lib/content-source";
 
-export default function MinistersDirectory() {
+export default function MinistersDirectory({
+  ministerGroups,
+}: {
+  ministerGroups: MinisterGroup[];
+}) {
   const [query, setQuery] = useState("");
   const [activeRank, setActiveRank] = useState("All");
   const [openSet, setOpenSet] = useState<Set<string>>(new Set());
 
+  const totalMinisters = ministerGroups.reduce((n, g) => n + g.count, 0);
   const ranks = ["All", ...ministerGroups.map((g) => g.rank)];
 
   const results = useMemo(() => {
@@ -27,13 +33,11 @@ export default function MinistersDirectory() {
           : g.ministers,
       }))
       .filter((g) => g.ministers.length > 0);
-  }, [query, activeRank]);
+  }, [query, activeRank, ministerGroups]);
 
   const shown = results.reduce((n, g) => n + g.ministers.length, 0);
   const searching = query.trim() !== "";
 
-  // A section is expanded when: searching, a single rank is selected, or the
-  // user has opened it. Otherwise collapsed (to cut scrolling under "All").
   const isOpen = (rank: string) =>
     searching || activeRank !== "All" || openSet.has(rank);
 
@@ -44,9 +48,17 @@ export default function MinistersDirectory() {
       return next;
     });
 
+  if (!ministerGroups.length) {
+    return (
+      <p className="text-center text-text-muted">
+        Minister records are not available right now. Add positions on Person
+        records in Church IT to populate this directory.
+      </p>
+    );
+  }
+
   return (
     <div>
-      {/* Search */}
       <div className="mx-auto max-w-xl">
         <div className="relative">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" />
@@ -66,7 +78,6 @@ export default function MinistersDirectory() {
         </p>
       </div>
 
-      {/* Rank filter */}
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         {ranks.map((rank) => (
           <button
@@ -84,7 +95,6 @@ export default function MinistersDirectory() {
         ))}
       </div>
 
-      {/* Results */}
       {shown === 0 ? (
         <p className="mt-12 text-center text-text-muted">
           No ministers match{" "}
@@ -123,31 +133,38 @@ export default function MinistersDirectory() {
                 {open && (
                   <ul className="grid gap-3 border-t border-border bg-muted-surface p-4 sm:grid-cols-2 lg:grid-cols-3">
                     {group.ministers.map((m) => (
-                      <li
-                        key={`${group.rank}-${m.name}`}
-                        className="border-l-2 border-primary bg-white p-4 shadow-sm"
-                      >
-                        <p className="font-bold text-foreground">{m.name}</p>
-                        {m.office && (
-                          <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-primary">
-                            {m.office}
-                          </p>
-                        )}
-                        {(m.branch || m.ordained) && (
-                          <p className="mt-2 flex items-center gap-1.5 text-sm text-text-muted">
-                            {m.branch && (
-                              <>
-                                <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
-                                {m.branch}
-                              </>
-                            )}
-                            {m.ordained && (
-                              <span className="ml-auto text-xs text-text-muted">
-                                Ord. {m.ordained}
-                              </span>
-                            )}
-                          </p>
-                        )}
+                      <li key={`${group.rank}-${m.id}`}>
+                        <Link
+                          href={`/churches/pastors/${encodeURIComponent(m.id)}`}
+                          className="group block border-l-2 border-primary bg-white p-4 shadow-sm transition-colors hover:bg-muted-surface"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-bold text-foreground group-hover:text-primary">
+                              {m.name}
+                            </p>
+                            <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-primary opacity-70 transition-opacity group-hover:opacity-100" />
+                          </div>
+                          {m.office && (
+                            <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-primary">
+                              {m.office}
+                            </p>
+                          )}
+                          {(m.branch || m.ordained) && (
+                            <p className="mt-2 flex items-center gap-1.5 text-sm text-text-muted">
+                              {m.branch && (
+                                <>
+                                  <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+                                  {m.branch}
+                                </>
+                              )}
+                              {m.ordained && (
+                                <span className="ml-auto text-xs text-text-muted">
+                                  Ord. {m.ordained}
+                                </span>
+                              )}
+                            </p>
+                          )}
+                        </Link>
                       </li>
                     ))}
                   </ul>

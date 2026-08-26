@@ -1,5 +1,6 @@
-// Regenerates src/data/ministers.ts from the "Data" sheet of the
-// TLPCI Ministers Database.xlsx workbook.
+// Legacy: previously regenerated src/data/ministers.ts from Excel.
+// Ministers now load from ERPNext Person records (positions child table).
+// This script is kept only if you still need the old Excel export workflow.
 //
 // Usage:  node scripts/sync-ministers.mjs
 // Also runs automatically before `npm run build` (see package.json "prebuild").

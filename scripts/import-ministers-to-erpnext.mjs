@@ -1,0 +1,328 @@
+/**
+ * Import ministers from TLPCI Ministers Database.xlsx into ERPNext.
+ *
+ * Creates (when missing):
+ *   - Position Type records (Category column)
+ *   - Church Location records (Branch column)
+ *   - Person records with custom_location + positions child table
+ *
+ * Usage:
+ *   node --env-file=.env.local scripts/import-ministers-to-erpnext.mjs
+ *   DRY_RUN=1 node --env-file=.env.local scripts/import-ministers-to-erpnext.mjs
+ */
+
+import * as XLSX from "xlsx";
+import { existsSync, readFileSync } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = join(__dirname, "..");
+const XLSX_PATH = join(root, "TLPCI Ministers Database.xlsx");
+
+const BASE = (process.env.ERPNEXT_URL || "").replace(/\/+$/, "");
+const READ_KEY = process.env.ERPNEXT_API_KEY || "";
+const READ_SECRET = process.env.ERPNEXT_API_SECRET || "";
+const WRITE_KEY = process.env.ERPNEXT_WRITE_API_KEY || "";
+const WRITE_SECRET = process.env.ERPNEXT_WRITE_API_SECRET || "";
+const DRY_RUN = process.env.DRY_RUN === "1";
+
+const readAuth = `token ${READ_KEY}:${READ_SECRET}`;
+const writeAuth = `token ${WRITE_KEY}:${WRITE_SECRET}`;
+
+const stats = {
+  positionTypesCreated: 0,
+  locationsCreated: 0,
+  personsCreated: 0,
+  personsUpdated: 0,
+  personsSkipped: 0,
+  errors: 0,
+};
+
+function str(value) {
+  return value === null || value === undefined ? "" : String(value).trim();
+}
+
+function parseFullName(name) {
+  const trimmed = name.trim().replace(/\s+/g, " ");
+  const parts = trimmed.split(" ");
+  const firstName = parts[0] ?? trimmed;
+  const lastName = parts.slice(1).join(" ") || firstName;
+  return { firstName, lastName, fullName: trimmed };
+}
+
+function ordainedStartDate(ordained) {
+  const year = str(ordained).replace(/[^\d]/g, "");
+  if (/^\d{4}$/.test(year)) return `${year}-01-01`;
+  return "2000-01-01";
+}
+
+function positionNotes(office, ordained) {
+  const parts = [];
+  const officeText = str(office);
+  const year = str(ordained).replace(/[^\d]/g, "");
+  if (officeText) parts.push(officeText);
+  if (/^\d{4}$/.test(year)) parts.push(`Ordained ${year}`);
+  return parts.join(" · ");
+}
+
+async function api(method, path, { write = false, body } = {}) {
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    headers: {
+      Authorization: write ? writeAuth : readAuth,
+      Accept: "application/json",
+      ...(body ? { "Content-Type": "application/json" } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const json = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, json };
+}
+
+async function listAll(doctype, fields = ["name"]) {
+  const params = new URLSearchParams();
+  params.set("fields", JSON.stringify(fields));
+  params.set("limit_page_length", "0");
+  const { json } = await api(
+    "GET",
+    `/api/resource/${encodeURIComponent(doctype)}?${params}`
+  );
+  return json.data ?? [];
+}
+
+async function createRecord(doctype, data) {
+  if (DRY_RUN) {
+    console.log(`[dry-run] create ${doctype}`, data);
+    return { name: `dry-${doctype}` };
+  }
+  const { ok, status, json } = await api(
+    "POST",
+    `/api/resource/${encodeURIComponent(doctype)}`,
+    { write: true, body: data }
+  );
+  if (!ok || !json.data) {
+    throw new Error(
+      `${doctype} create failed (${status}): ${
+        json.exception || json._server_messages || "unknown"
+      }`
+    );
+  }
+  return json.data;
+}
+
+async function updateRecord(doctype, name, data) {
+  if (DRY_RUN) {
+    console.log(`[dry-run] update ${doctype}/${name}`, data);
+    return jsonSafe(data);
+  }
+  const { ok, status, json } = await api(
+    "PUT",
+    `/api/resource/${encodeURIComponent(doctype)}/${encodeURIComponent(name)}`,
+    { write: true, body: data }
+  );
+  if (!ok || !json.data) {
+    throw new Error(
+      `${doctype} update failed (${status}): ${
+        json.exception || json._server_messages || "unknown"
+      }`
+    );
+  }
+  return json.data;
+}
+
+function jsonSafe(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function normalizeKey(value) {
+  return str(value).toLowerCase();
+}
+
+async function loadExistingMaps() {
+  const [positionTypes, locations, people] = await Promise.all([
+    listAll("Position Type", ["name", "position"]),
+    listAll("Church Location", ["name", "location"]),
+    listAll("Person", ["name", "full_name"]),
+  ]);
+
+  const positionTypeSet = new Set(
+    positionTypes.map((row) => normalizeKey(row.position ?? row.name))
+  );
+
+  const locationByText = new Map();
+  for (const row of locations) {
+    const label = str(row.location);
+    if (label) locationByText.set(normalizeKey(label), row.name);
+  }
+
+  const peopleByName = new Map();
+  for (const row of people) {
+    const label = str(row.full_name);
+    if (label) peopleByName.set(normalizeKey(label), row.name);
+  }
+
+  return { positionTypeSet, locationByText, peopleByName };
+}
+
+async function ensurePositionType(category, cache) {
+  const key = normalizeKey(category);
+  if (cache.positionTypeSet.has(key)) return category;
+
+  await createRecord("Position Type", {
+    position: category,
+    description: `${category} minister`,
+  });
+  cache.positionTypeSet.add(key);
+  stats.positionTypesCreated += 1;
+  console.log(`+ Position Type: ${category}`);
+  return category;
+}
+
+async function ensureChurchLocation(branch, cache) {
+  const label = str(branch);
+  if (!label) return undefined;
+
+  const key = normalizeKey(label);
+  const existing = cache.locationByText.get(key);
+  if (existing) return existing;
+
+  const created = await createRecord("Church Location", { location: label });
+  cache.locationByText.set(key, created.name);
+  stats.locationsCreated += 1;
+  console.log(`+ Church Location: ${label} (${created.name})`);
+  return created.name;
+}
+
+function buildPositionRow(category, office, ordained) {
+  return {
+    position: category,
+    start_date: ordainedStartDate(ordained),
+    notes: positionNotes(office, ordained) || undefined,
+  };
+}
+
+function hasMatchingPosition(positions, category, office, ordained) {
+  const notes = positionNotes(office, ordained);
+  const start = ordainedStartDate(ordained);
+  return (positions ?? []).some((row) => {
+    const sameType = str(row.position) === category;
+    const sameStart = str(row.start_date) === start;
+    const sameNotes = str(row.notes) === notes;
+    return sameType && sameStart && sameNotes;
+  });
+}
+
+async function upsertMinister(row, cache) {
+  const category = str(row.Category);
+  const name = str(row.Name);
+  const branch = str(row.Branch);
+  const office = str(row.Office);
+  const ordained = str(row.Ordained);
+
+  if (!category || !name) {
+    stats.personsSkipped += 1;
+    return;
+  }
+
+  await ensurePositionType(category, cache);
+  const locationId = branch
+    ? await ensureChurchLocation(branch, cache)
+    : undefined;
+
+  const { firstName, lastName, fullName } = parseFullName(name);
+  const positionRow = buildPositionRow(category, office, ordained);
+  const existingId = cache.peopleByName.get(normalizeKey(fullName));
+  const existing = existingId
+    ? (
+        await api("GET", `/api/resource/Person/${encodeURIComponent(existingId)}`)
+      ).json.data
+    : null;
+
+  if (!existing) {
+    const payload = {
+      first_name: firstName,
+      last_name: lastName,
+      full_name: fullName,
+      positions: [positionRow],
+    };
+    if (locationId) payload.custom_location = locationId;
+
+    const created = await createRecord("Person", payload);
+    cache.peopleByName.set(normalizeKey(fullName), created.name);
+    stats.personsCreated += 1;
+    console.log(`+ Person: ${fullName} (${created.name})`);
+    return;
+  }
+
+  const updates = {};
+  if (locationId && str(existing.custom_location) !== locationId) {
+    updates.custom_location = locationId;
+  }
+
+  const positions = Array.isArray(existing.positions)
+    ? [...existing.positions]
+    : [];
+  if (!hasMatchingPosition(positions, category, office, ordained)) {
+    positions.push(positionRow);
+    updates.positions = positions;
+  }
+
+  if (!Object.keys(updates).length) {
+    stats.personsSkipped += 1;
+    return;
+  }
+
+  await updateRecord("Person", existing.name, updates);
+  stats.personsUpdated += 1;
+  console.log(`~ Person: ${fullName} (${existing.name})`);
+}
+
+async function main() {
+  if (!BASE || !READ_KEY || !READ_SECRET || !WRITE_KEY || !WRITE_SECRET) {
+    console.error(
+      "Missing ERPNEXT_URL / API keys in .env.local (read + write credentials required)."
+    );
+    process.exit(1);
+  }
+
+  if (!existsSync(XLSX_PATH)) {
+    console.error(`Workbook not found: ${XLSX_PATH}`);
+    process.exit(1);
+  }
+
+  const wb = XLSX.read(readFileSync(XLSX_PATH), { type: "buffer" });
+  const sheet = wb.Sheets.Data;
+  if (!sheet) {
+    console.error('Workbook is missing the "Data" sheet.');
+    process.exit(1);
+  }
+
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+  console.log(
+    `[import-ministers] Starting import of ${rows.length} rows${DRY_RUN ? " (DRY RUN)" : ""}…`
+  );
+
+  const cache = await loadExistingMaps();
+
+  for (const row of rows) {
+    try {
+      await upsertMinister(row, cache);
+    } catch (error) {
+      stats.errors += 1;
+      console.error(
+        `! Failed for ${str(row.Name) || "unknown"}:`,
+        error instanceof Error ? error.message : error
+      );
+    }
+  }
+
+  console.log("\n[import-ministers] Done.");
+  console.log(JSON.stringify(stats, null, 2));
+  if (stats.errors) process.exit(1);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

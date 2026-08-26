@@ -1075,6 +1075,7 @@ type PersonPositionRow = {
   position?: string;
   start_date?: string;
   end_date?: string;
+  notes?: string;
 };
 
 function ministryLeaderListOf(
@@ -1606,4 +1607,327 @@ export async function getTestimony(id: string): Promise<TestimonyItem | null> {
   if (!row) return null;
   if (Number(row.publish) !== 1 || Number(row.is_approved) !== 1) return null;
   return mapTestimonyRow(row);
+}
+
+// ----------------------------------------------------------------- Ministers
+export type Minister = {
+  id: string;
+  name: string;
+  positionType: string;
+  rank: string;
+  office?: string;
+  branch?: string;
+  ordained?: string;
+  photo?: string;
+};
+
+export type MinisterGroup = {
+  rank: string;
+  count: number;
+  ministers: Minister[];
+};
+
+export type MinisterPosition = {
+  title: string;
+  startDate: string;
+  endDate?: string;
+  notes?: string;
+  current: boolean;
+};
+
+export type MinisterLifeEvent = {
+  type: string;
+  date: string;
+  dateLabel: string;
+};
+
+export type MinisterDetail = Minister & {
+  bio?: string;
+  bioHtml?: string;
+  positions: MinisterPosition[];
+  lifeEvents: MinisterLifeEvent[];
+  spouseName?: string;
+};
+
+type PersonLifeEvent = {
+  event_type?: string;
+  date?: string;
+};
+
+type PersonEmailRow = {
+  email_address?: string;
+  is_primary?: number;
+};
+
+type PersonPhoneRow = {
+  phone_number?: string;
+  is_primary?: number;
+};
+
+type MinisterPersonRecord = {
+  name?: string;
+  full_name?: string;
+  photo?: string;
+  notes?: string;
+  spouse?: string;
+  custom_location?: string;
+  positions?: PersonPositionRow[];
+  life_events?: PersonLifeEvent[];
+  emails?: PersonEmailRow[];
+  phones?: PersonPhoneRow[];
+};
+
+const MINISTER_RANK_ORDER = [
+  "Apostle",
+  "Prophet",
+  "Senior Pastor",
+  "Reverend",
+  "Pastor",
+  "Elder",
+  "Deacon",
+];
+
+const MINISTER_RANK_PLURALS: Record<string, string> = {
+  Apostle: "Apostles",
+  Prophet: "Prophets",
+  "Senior Pastor": "Senior Pastors",
+  Reverend: "Reverends",
+  Pastor: "Pastors",
+  Elder: "Elders",
+  Deacon: "Deacons",
+};
+
+function ministerRankPlural(type: string): string {
+  return MINISTER_RANK_PLURALS[type] ?? (type.endsWith("s") ? type : `${type}s`);
+}
+
+function ministerRankSortIndex(type: string): number {
+  const idx = MINISTER_RANK_ORDER.indexOf(type);
+  return idx >= 0 ? idx : MINISTER_RANK_ORDER.length + 1;
+}
+
+function currentPersonPositions(
+  positions?: PersonPositionRow[]
+): PersonPositionRow[] {
+  if (!positions?.length) return [];
+  const active = positions.filter((p) => !p.end_date?.trim());
+  return active.length ? active : positions;
+}
+
+function sortedPersonPositions(positions: PersonPositionRow[]): PersonPositionRow[] {
+  return [...positions].sort((a, b) => {
+    const aTime = a.start_date ? new Date(a.start_date).getTime() : 0;
+    const bTime = b.start_date ? new Date(b.start_date).getTime() : 0;
+    return bTime - aTime;
+  });
+}
+
+function primaryMinisterType(positions?: PersonPositionRow[]): string {
+  const pool = sortedPersonPositions(currentPersonPositions(positions));
+  return pool[0]?.position?.trim() ?? "";
+}
+
+function ministerOfficeOf(
+  positions: PersonPositionRow[] | undefined,
+  primaryType: string
+): string {
+  const titles = currentPersonPositions(positions)
+    .map((p) => p.position?.trim())
+    .filter((title): title is string => Boolean(title) && title !== primaryType);
+  const notes = currentPersonPositions(positions)
+    .map((p) => p.notes?.trim())
+    .filter(Boolean);
+  return [...new Set([...titles, ...notes])].join(" · ");
+}
+
+function ministerOrdainedYear(
+  lifeEvents?: PersonLifeEvent[],
+  positionStart?: string
+): string | undefined {
+  const ordination = lifeEvents?.find((event) =>
+    /ordin/i.test(event.event_type ?? "")
+  );
+  const date = ordination?.date ?? positionStart;
+  if (!date) return undefined;
+  const year = date.slice(0, 4);
+  return /^\d{4}$/.test(year) ? year : undefined;
+}
+
+function mapMinisterPositions(
+  positions?: PersonPositionRow[]
+): MinisterPosition[] {
+  return sortedPersonPositions(positions ?? []).map((row) => ({
+    title: row.position?.trim() ?? "",
+    startDate: row.start_date ?? "",
+    endDate: row.end_date?.trim() || undefined,
+    notes: row.notes?.trim() || undefined,
+    current: !row.end_date?.trim(),
+  }));
+}
+
+function mapMinisterLifeEvents(
+  lifeEvents?: PersonLifeEvent[]
+): MinisterLifeEvent[] {
+  return (lifeEvents ?? [])
+    .filter((event) => event.event_type?.trim() && event.date?.trim())
+    .map((event) => ({
+      type: event.event_type!.trim(),
+      date: event.date!.trim(),
+      dateLabel: fmtLong(event.date) || event.date!.trim(),
+    }))
+    .sort((a, b) => {
+      const aTime = parseDate(a.date)?.getTime() ?? 0;
+      const bTime = parseDate(b.date)?.getTime() ?? 0;
+      return bTime - aTime;
+    });
+}
+
+function mapPersonToMinister(
+  person: MinisterPersonRecord,
+  locationMap?: Map<string, string>
+): Minister | null {
+  const primaryType = primaryMinisterType(person.positions);
+  if (!primaryType || !person.full_name?.trim()) return null;
+
+  const minister: Minister = {
+    id: person.name ?? person.full_name.trim(),
+    name: person.full_name.trim(),
+    positionType: primaryType,
+    rank: ministerRankPlural(primaryType),
+  };
+
+  const office = ministerOfficeOf(person.positions, primaryType);
+  if (office) minister.office = office;
+
+  const locationId = person.custom_location?.trim();
+  const branch = locationId ? locationMap?.get(locationId) : undefined;
+  if (branch) minister.branch = branch;
+
+  const primaryStart = sortedPersonPositions(
+    currentPersonPositions(person.positions)
+  )[0]?.start_date;
+  const ordained = ministerOrdainedYear(person.life_events, primaryStart);
+  if (ordained) minister.ordained = ordained;
+
+  const photo = absoluteFileUrl(person.photo);
+  if (photo) minister.photo = photo;
+
+  return minister;
+}
+
+function mapPersonToMinisterDetail(
+  person: MinisterPersonRecord,
+  spouseName?: string,
+  locationMap?: Map<string, string>
+): MinisterDetail | null {
+  const base = mapPersonToMinister(person, locationMap);
+  if (!base) return null;
+
+  const notes = person.notes?.trim() ?? "";
+  const detail: MinisterDetail = {
+    ...base,
+    positions: mapMinisterPositions(person.positions),
+    lifeEvents: mapMinisterLifeEvents(person.life_events),
+  };
+
+  if (notes) {
+    detail.bio = htmlToParagraphs(notes).join("\n\n") || notes.replace(/<[^>]+>/g, "");
+    detail.bioHtml = sanitizeHtml(notes);
+  }
+  if (spouseName) detail.spouseName = spouseName;
+
+  return detail;
+}
+
+async function fetchChurchLocationMap(): Promise<Map<string, string>> {
+  const rows = await erpnextList<{ name?: string; location?: string }>(
+    "Church Location",
+    {
+      fields: ["name", "location"],
+      fresh: true,
+    }
+  );
+  const map = new Map<string, string>();
+  for (const row of rows ?? []) {
+    if (row.name && row.location?.trim()) {
+      map.set(row.name, row.location.trim());
+    }
+  }
+  return map;
+}
+
+/** Ministers grouped by current Position Type from ERPNext Person records. */
+export async function getMinisters(): Promise<MinisterGroup[]> {
+  const people = await erpnextList<{ name?: string }>("Person", {
+    fields: ["name"],
+    orderBy: "full_name asc",
+    fresh: true,
+  });
+  if (!people?.length) return [];
+
+  const locationMap = await fetchChurchLocationMap();
+
+  const records = (
+    await Promise.all(
+      people.map(async (row) => {
+        if (!row.name) return null;
+        return erpnextDoc<MinisterPersonRecord>("Person", row.name, {
+          fresh: true,
+        });
+      })
+    )
+  ).filter((person): person is MinisterPersonRecord =>
+    Boolean(person?.full_name?.trim())
+  );
+
+  const byRank = new Map<string, Minister[]>();
+
+  for (const person of records) {
+    const minister = mapPersonToMinister(person, locationMap);
+    if (!minister) continue;
+
+    if (!byRank.has(minister.positionType)) {
+      byRank.set(minister.positionType, []);
+    }
+    byRank.get(minister.positionType)!.push(minister);
+  }
+
+  return [...byRank.entries()]
+    .sort(
+      ([a], [b]) =>
+        ministerRankSortIndex(a) - ministerRankSortIndex(b) ||
+        a.localeCompare(b)
+    )
+    .map(([type, ministers]) => ({
+      rank: ministerRankPlural(type),
+      count: ministers.length,
+      ministers: ministers.sort((a, b) => a.name.localeCompare(b.name)),
+    }));
+}
+
+/** Single minister profile from a Person record (must have a position). */
+export async function getMinister(id: string): Promise<MinisterDetail | null> {
+  const person = await erpnextDoc<MinisterPersonRecord>("Person", id, {
+    fresh: true,
+  });
+  if (!person) return null;
+
+  let spouseName: string | undefined;
+  if (person.spouse?.trim()) {
+    const spouse = await erpnextDoc<{ full_name?: string }>(
+      "Person",
+      person.spouse.trim(),
+      { fresh: true }
+    );
+    spouseName = spouse?.full_name?.trim() || undefined;
+  }
+
+  const locationMap = await fetchChurchLocationMap();
+  return mapPersonToMinisterDetail(person, spouseName, locationMap);
+}
+
+/** Person IDs for ministers (used for static generation and links). */
+export async function getMinisterIds(): Promise<string[]> {
+  const groups = await getMinisters();
+  return groups.flatMap((group) => group.ministers.map((m) => m.id));
 }
