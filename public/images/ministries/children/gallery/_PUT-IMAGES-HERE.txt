@@ -1,0 +1,1 @@
+Drop children event photos here: 1.jpg, 2.jpg, 3.jpg ... (any count).

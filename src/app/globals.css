@@ -1,0 +1,352 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #222222;
+  --primary: #c8102e;
+  --primary-dark: #a30d26;
+  --secondary: #2e7d32;
+  --secondary-dark: #1b5e20;
+  --primary-subtle: rgba(200, 16, 46, 0.07);
+  --secondary-subtle: rgba(46, 125, 50, 0.1);
+  --muted-surface: #f7f7f7;
+  --border-subtle: #ececec;
+  --surface: #f0f0f0;
+  --border: #e5e5e5;
+  --footer-bg: #1a1a1a;
+  --text-muted: #666666;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-secondary: var(--secondary);
+  --color-secondary-dark: var(--secondary-dark);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-secondary-subtle: var(--secondary-subtle);
+  --color-muted-surface: var(--muted-surface);
+  --color-border-subtle: var(--border-subtle);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-footer-bg: var(--footer-bg);
+  --color-text-muted: var(--text-muted);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
+}
+
+@theme {
+  --text-display: 3.75rem;
+  --text-display--line-height: 1.1;
+  --text-display--font-weight: 700;
+  --text-h1: 3rem;
+  --text-h1--line-height: 1.15;
+  --text-h1--font-weight: 700;
+  --text-h2: 2.25rem;
+  --text-h2--line-height: 1.2;
+  --text-h2--font-weight: 700;
+  --text-h3: 1.875rem;
+  --text-h3--line-height: 1.25;
+  --text-h3--font-weight: 600;
+  --text-h4: 1.5rem;
+  --text-h4--line-height: 1.3;
+  --text-h4--font-weight: 600;
+  --text-h5: 1.25rem;
+  --text-h5--line-height: 1.4;
+  --text-h5--font-weight: 600;
+  --text-h6: 1.125rem;
+  --text-h6--line-height: 1.45;
+  --text-h6--font-weight: 500;
+  --text-body-xl: 1.25rem;
+  --text-body-xl--line-height: 1.6;
+  --text-body: 1.125rem;
+  --text-body--line-height: 1.7;
+  --text-small: 1rem;
+  --text-small--line-height: 1.6;
+  --text-caption: 0.875rem;
+  --text-caption--line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+h1,
+h2 {
+  font-family: var(--font-heading), Georgia, serif;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+  line-height: 1.65;
+  /* Guard against accidental horizontal scroll on small screens
+     (clip, unlike hidden, keeps position: sticky working) */
+  overflow-x: clip;
+}
+
+/* —— DCLM-style UI primitives —— */
+
+.section-accent {
+  display: block;
+  width: 42px;
+  height: 5px;
+  background: var(--primary);
+  margin-bottom: 14px;
+}
+
+.section-accent-white {
+  display: block;
+  width: 42px;
+  height: 5px;
+  background: #ffffff;
+  margin-bottom: 14px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-secondary {
+  background: var(--secondary);
+  color: #ffffff;
+}
+
+.btn-secondary:hover {
+  background: var(--secondary-dark);
+}
+
+.btn-white {
+  background: #ffffff;
+  color: #222222;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.btn-white:hover {
+  background: #f5f5f5;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #222;
+}
+
+.btn-outline:hover {
+  background: #f7f7f7;
+}
+
+.field {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+  color: #222;
+  outline: none;
+}
+
+.field:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-subtle);
+}
+
+.card-shadow {
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.date-badge {
+  display: inline-block;
+  background: var(--secondary);
+  color: #ffffff;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.date-badge-light {
+  display: inline-block;
+  background: #ffffff;
+  color: #222;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nav-dropdown {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover .nav-dropdown,
+.nav-item:focus-within .nav-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.image-card-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.78) 0%,
+    rgba(0, 0, 0, 0.35) 55%,
+    rgba(0, 0, 0, 0.12) 100%
+  );
+}
+
+.hero-auditorium {
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.28)),
+    url("https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1600&q=80")
+      center / cover no-repeat;
+}
+
+.testimony-hero {
+  background:
+    linear-gradient(to right, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.2)),
+    url("https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&q=80")
+      center / cover no-repeat;
+}
+
+.card-thumb-1 {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
+    url("https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=400&q=70")
+      center / cover no-repeat;
+}
+
+.card-thumb-2 {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
+    url("https://images.unsplash.com/photo-1507692049790-de58290a4334?w=400&q=70")
+      center / cover no-repeat;
+}
+
+.card-thumb-3 {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
+    url("https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&q=70")
+      center / cover no-repeat;
+}
+
+.card-thumb-4 {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
+    url("https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&q=70")
+      center / cover no-repeat;
+}
+
+.feature-bg-1 {
+  background: url("https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80")
+    center / cover no-repeat;
+}
+
+.feature-bg-2 {
+  background: url("https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800&q=80")
+    center / cover no-repeat;
+}
+
+.feature-bg-3 {
+  background: url("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80")
+    center / cover no-repeat;
+}
+
+.feature-bg-4 {
+  background: url("https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&q=80")
+    center / cover no-repeat;
+}
+
+/* Rich-text article body — styles the sanitized HTML injected on news detail
+   pages, since Tailwind's reset strips default list/heading styling. */
+.prose-tlpci h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-foreground);
+  margin: 1.75rem 0 0.75rem;
+}
+.prose-tlpci h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-foreground);
+  margin: 1.5rem 0 0.5rem;
+}
+.prose-tlpci p {
+  margin: 0 0 1rem;
+}
+.prose-tlpci ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0 0 1rem;
+}
+.prose-tlpci ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+  margin: 0 0 1rem;
+}
+.prose-tlpci li {
+  margin: 0.35rem 0;
+}
+.prose-tlpci a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+.prose-tlpci strong {
+  font-weight: 700;
+  color: var(--color-foreground);
+}
+.prose-tlpci blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 1rem;
+  font-style: italic;
+  margin: 1rem 0;
+}
+.prose-tlpci img {
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+}
+
+/* iOS Safari gives date/time inputs an intrinsic width that overflows their
+   container. Constrain them so they behave like every other field. */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}

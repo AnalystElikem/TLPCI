@@ -1,0 +1,1 @@
+Children's Ministry hero image goes in the parent folder as hero.jpg (a Ghanaian child). Leader photos go in ./leaders. Event/activity photos go in ./gallery.
