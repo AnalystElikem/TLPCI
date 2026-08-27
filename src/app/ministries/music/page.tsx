@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { Music2, Mic2, Users, Sliders } from "lucide-react";
 import OtherMinistries from "@/components/ministries/OtherMinistries";
@@ -10,6 +9,10 @@ import {
   getMinistryHero,
   getMinistryLeaders,
 } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import { CmsMinistryHeroText } from "@/components/cms/CmsPageSections";
+
+const PAGE_ROUTE = "ministries/music";
 
 export const metadata: Metadata = {
   title: "Music Ministry",
@@ -43,23 +46,23 @@ const teams = [
 export const revalidate = 300;
 
 export default async function MusicMinistryPage() {
-  const [hero, liveLeaders] = await Promise.all([
+  const [heroImage, liveLeaders, heroCms] = await Promise.all([
     getMinistryHero("Music"),
     getMinistryLeaders("Music"),
+    getWebPageSection(PAGE_ROUTE, "hero"),
   ]);
   return (
     <>
       <section className="relative h-[240px] overflow-hidden md:h-[320px]">
-        <MinistryHeroMedia src={hero} alt="Music ministry" priority />
+        <MinistryHeroMedia src={heroImage} alt="Music ministry" priority />
         <div className="absolute inset-0 bg-black/60" />
         <div className="absolute inset-0 flex items-end px-4 pb-10 lg:px-16">
           <div className="mx-auto w-full max-w-[1100px]">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/70">
-              Worship &amp; Praise
-            </p>
-            <h1 className="mt-2 text-4xl font-bold uppercase text-white md:text-5xl">
-              Music Ministry
-            </h1>
+            <CmsMinistryHeroText
+              cms={heroCms}
+              fallbackEyebrow="Worship & Praise"
+              fallbackTitle="Music Ministry"
+            />
           </div>
         </div>
       </section>

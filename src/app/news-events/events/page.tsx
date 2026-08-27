@@ -3,6 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock, MapPin, CalendarDays, Home } from "lucide-react";
 import { getEvents, getPageBanner, eventPath } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
+
+const PAGE_ROUTE = "news-events/events";
 
 export const metadata: Metadata = {
   title: "Events",
@@ -16,32 +20,20 @@ const DEFAULT_BANNER =
   "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1600&q=80";
 
 export default async function EventsPage() {
-  const [events, banner] = await Promise.all([
+  const [events, hero, banner] = await Promise.all([
     getEvents(),
-    getPageBanner("Events"),
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Events", PAGE_ROUTE),
   ]);
   return (
     <>
-      {/* Banner */}
-      <section className="relative h-[200px] w-full overflow-hidden md:h-[280px]">
-        <Image
-          src={banner || DEFAULT_BANNER}
-          alt="Events"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/45 to-black/35" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">
-            Join Us
-          </p>
-          <h1 className="mt-3 text-3xl font-bold uppercase tracking-wide text-white md:text-5xl">
-            Events
-          </h1>
-        </div>
-      </section>
+      <CmsPageBanner
+        cms={hero}
+        alt="Events"
+        fallbackImage={banner || DEFAULT_BANNER}
+        fallbackEyebrow="Join Us"
+        fallbackTitle="Events"
+      />
 
       {/* Home cells promo */}
       <section className="relative overflow-hidden">

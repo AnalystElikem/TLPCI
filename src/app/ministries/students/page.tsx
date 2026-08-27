@@ -12,6 +12,9 @@ import {
   getMinistryGallery,
   getMinistryLeaders,
 } from "@/lib/content-source";
+import { getWebPageSection, webText } from "@/lib/web-page-content";
+
+const PAGE_ROUTE = "ministries/students";
 
 export const metadata: Metadata = {
   title: "TELPSAM — Students Ministry",
@@ -64,18 +67,19 @@ const campuses = [
 export const revalidate = 300;
 
 export default async function StudentsMinistryPage() {
-  const [hero, gallery, liveLeaders] = await Promise.all([
+  const [heroImage, gallery, liveLeaders, heroCms] = await Promise.all([
     getMinistryHero("Students"),
     getMinistryGallery("Students"),
     getMinistryLeaders("Students"),
+    getWebPageSection(PAGE_ROUTE, "hero"),
   ]);
   return (
     <>
       {/* Hero — image + brand */}
       <section className="relative min-h-[560px] overflow-hidden bg-footer-bg md:min-h-[600px]">
-        {hero ? (
+        {heroImage ? (
           <Image
-            src={hero}
+            src={heroImage}
             alt="TELPSAM students"
             fill
             className="object-cover opacity-45"
@@ -100,7 +104,11 @@ export default async function StudentsMinistryPage() {
             Established 2001
           </span>
           <h1 className="mt-5 max-w-2xl font-serif text-3xl font-bold leading-tight text-white md:text-5xl">
-            The Lord&apos;s Pentecostal Students &amp; Associates&apos; Ministry
+            {webText(
+              heroCms,
+              "title",
+              "The Lord's Pentecostal Students & Associates' Ministry"
+            )}
           </h1>
           <p className="mx-auto mt-5 max-w-xl leading-relaxed text-white/80">
             Reaching tertiary campuses across Ghana with the gospel — raising

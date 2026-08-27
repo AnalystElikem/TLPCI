@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const item = await getBlogPost(decodeURIComponent(slug));
   return {
-    title: item ? item.title : "Blog",
+    title: item ? item.title : "Latest News",
     description: item?.excerpt,
   };
 }
@@ -54,7 +54,7 @@ export default async function BlogPostPage({ params }: Props) {
               className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-white/80 hover:text-white"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              All posts
+              Latest news
             </Link>
             <p className="mt-3 text-xs font-bold uppercase tracking-[0.25em] text-white/75">
               {item.category} · {item.date}
@@ -97,7 +97,7 @@ export default async function BlogPostPage({ params }: Props) {
         <section className="border-t border-border bg-muted-surface py-14 lg:py-20">
           <div className="mx-auto max-w-[1100px] px-4 lg:px-8">
             <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-text-muted">
-              More posts
+              More news
             </h2>
             <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {others.map((n) => (

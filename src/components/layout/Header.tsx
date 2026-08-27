@@ -2,12 +2,22 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { navLinks } from "@/data/content";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  function closeMobileMenu() {
+    setMobileOpen(false);
+    setExpanded({});
+  }
+
+  function toggleMobileSection(label: string) {
+    setExpanded((prev) => ({ ...prev, [label]: !prev[label] }));
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
@@ -54,7 +64,7 @@ export default function Header() {
         </nav>
 
         <button
-          onClick={() => setMobileOpen(!mobileOpen)}
+          onClick={() => (mobileOpen ? closeMobileMenu() : setMobileOpen(true))}
           className="p-2 text-foreground lg:hidden"
           aria-label="Toggle menu"
         >
@@ -65,38 +75,54 @@ export default function Header() {
       {mobileOpen && (
         <nav className="max-h-[70vh] overflow-y-auto border-t border-border bg-white lg:hidden">
           <ul className="px-4 py-2">
-            {navLinks.map((link) => (
-              <li key={link.label} className="border-b border-border last:border-0">
-                {link.href !== "#" ? (
-                  <Link
-                    href={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="block py-3 text-sm font-medium uppercase text-foreground"
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
-                  <p className="py-3 text-sm font-medium uppercase text-foreground">
-                    {link.label}
-                  </p>
-                )}
-                {link.children && (
-                  <ul className="pb-3 pl-3">
-                    {link.children.map((child) => (
-                      <li key={child.label}>
-                        <Link
-                          href={child.href}
-                          onClick={() => setMobileOpen(false)}
-                          className="block py-1.5 text-sm text-text-muted"
-                        >
-                          {child.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
+            {navLinks.map((link) => {
+              const isExpanded = Boolean(expanded[link.label]);
+
+              return (
+                <li key={link.label} className="border-b border-border last:border-0">
+                  {link.children ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => toggleMobileSection(link.label)}
+                        aria-expanded={isExpanded}
+                        className="flex w-full items-center justify-between py-3 text-left text-sm font-medium uppercase text-foreground"
+                      >
+                        {link.label}
+                        <ChevronDown
+                          className={`h-4 w-4 shrink-0 text-text-muted transition-transform duration-200 ${
+                            isExpanded ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {isExpanded ? (
+                        <ul className="pb-3 pl-3">
+                          {link.children.map((child) => (
+                            <li key={child.label}>
+                              <Link
+                                href={child.href}
+                                onClick={closeMobileMenu}
+                                className="block py-1.5 text-sm text-text-muted"
+                              >
+                                {child.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </>
+                  ) : (
+                    <Link
+                      href={link.href}
+                      onClick={closeMobileMenu}
+                      className="block py-3 text-sm font-medium uppercase text-foreground"
+                    >
+                      {link.label}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
       )}

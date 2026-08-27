@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getLivestream, getPageBanner } from "@/lib/content-source";
+import { getWebPageSection, webText } from "@/lib/web-page-content";
 import Link from "next/link";
 import { Radio, Calendar, Clock, Youtube, Facebook } from "lucide-react";
 import { youtubeVideoId } from "@/lib/youtube";
@@ -25,10 +26,16 @@ const upcoming = [
   { title: "The Lord's Hour", when: "Wednesday · 10:00 pm" },
 ];
 
+const PAGE_ROUTE = "media/livestream";
+
 export const revalidate = 300;
 
 export default async function LivestreamPage() {
-  const [banner, live] = await Promise.all([getPageBanner("Livestream"), getLivestream()]);
+  const [banner, live, hero] = await Promise.all([
+    getPageBanner("Livestream", PAGE_ROUTE),
+    getLivestream(),
+    getWebPageSection(PAGE_ROUTE, "hero"),
+  ]);
   const youtubeId = youtubeVideoId(live.youtubeUrl);
   const hasVideo = Boolean(youtubeId || live.facebookUrl);
   const statusLabel = !hasVideo
@@ -51,11 +58,14 @@ export default async function LivestreamPage() {
             )}
           </div>
           <h1 className="mt-4 text-3xl font-bold uppercase md:text-5xl">
-            Livestream
+            {webText(hero, "title", "Livestream")}
           </h1>
           <p className="mt-3 max-w-lg text-white/70">
-            Join us for worship and the Word online — or catch the replay when
-            you can&apos;t make it in person.
+            {webText(
+              hero,
+              "subtitle",
+              "Join us for worship and the Word online — or catch the replay when you can't make it in person."
+            )}
           </p>
 
           {/* Player */}

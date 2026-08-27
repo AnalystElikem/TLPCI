@@ -51,8 +51,8 @@ export default function MinistersDirectory({
   if (!ministerGroups.length) {
     return (
       <p className="text-center text-text-muted">
-        Minister records are not available right now. Add positions on Person
-        records in Church IT to populate this directory.
+        Minister records are not available right now. Add ministers in Church IT
+        under <strong>Ministers</strong> to populate this directory.
       </p>
     );
   }

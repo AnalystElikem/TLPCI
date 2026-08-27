@@ -8,7 +8,6 @@ import {
   getDevotion,
   getDevotions,
 } from "@/lib/content-source";
-import { CHURCH_LOGO } from "@/lib/constants";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -40,8 +39,8 @@ export default async function DevotionDetailPage({ params }: Props) {
 
   return (
     <>
-      <section className="relative min-h-[280px] overflow-hidden md:min-h-[420px]">
-        {devotion.image ? (
+      {devotion.image ? (
+        <section className="relative min-h-[280px] overflow-hidden md:min-h-[420px]">
           <Image
             src={devotion.image}
             alt={devotion.title}
@@ -50,31 +49,54 @@ export default async function DevotionDetailPage({ params }: Props) {
             sizes="100vw"
             priority
           />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-secondary-dark via-secondary to-primary" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/30" />
-        <div className="relative flex min-h-[280px] flex-col justify-end px-4 pb-8 md:min-h-[420px] lg:px-8">
-          <div className="mx-auto w-full max-w-[900px]">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/30" />
+          <div className="relative flex min-h-[280px] flex-col justify-end px-4 pb-8 md:min-h-[420px] lg:px-8">
+            <div className="mx-auto w-full max-w-[900px]">
+              <Link
+                href="/media/devotions"
+                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-white/80 hover:text-white"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                All devotions
+              </Link>
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.25em] text-white/75">
+                Daily Devotional · {devotion.dateLabel}
+              </p>
+              <h1 className="mt-2 font-serif text-3xl font-bold leading-tight text-white md:text-5xl">
+                {devotion.title}
+              </h1>
+              {devotion.scriptureReference && (
+                <p className="mt-3 text-sm text-white/85">
+                  {devotion.scriptureReference}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="border-b border-border bg-white">
+          <div className="mx-auto max-w-[900px] px-4 py-10 lg:px-8 lg:py-12">
             <Link
               href="/media/devotions"
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-white/80 hover:text-white"
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary hover:underline"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               All devotions
             </Link>
-            <p className="mt-4 text-xs font-bold uppercase tracking-[0.25em] text-white/75">
+            <p className="mt-6 text-xs font-bold uppercase tracking-[0.25em] text-primary">
               Daily Devotional · {devotion.dateLabel}
             </p>
-            <h1 className="mt-2 font-serif text-3xl font-bold leading-tight text-white md:text-5xl">
+            <h1 className="mt-2 font-serif text-3xl font-bold leading-tight text-foreground md:text-5xl">
               {devotion.title}
             </h1>
             {devotion.scriptureReference && (
-              <p className="mt-3 text-sm text-white/85">{devotion.scriptureReference}</p>
+              <p className="mt-3 text-sm text-text-muted">
+                {devotion.scriptureReference}
+              </p>
             )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="bg-muted-surface py-14 lg:py-20">
         <div className="mx-auto grid max-w-[1100px] gap-10 px-4 lg:grid-cols-[1fr_320px] lg:gap-12 lg:px-8">
@@ -152,14 +174,7 @@ export default async function DevotionDetailPage({ params }: Props) {
             )}
 
             {!devotion.image && (
-              <div className="flex flex-col items-center gap-3 bg-white p-6 text-center shadow-sm">
-                <Image
-                  src={CHURCH_LOGO}
-                  alt=""
-                  width={56}
-                  height={56}
-                  className="h-14 w-14 object-contain opacity-90"
-                />
+              <div className="border border-border bg-white p-6 text-center shadow-sm">
                 <p className="text-xs uppercase tracking-[0.2em] text-text-muted">
                   {devotion.dateLabel}
                 </p>

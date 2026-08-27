@@ -3,8 +3,10 @@
  *
  * Creates (when missing):
  *   - Position Type records (Category column)
- *   - Church Location records (Branch column)
- *   - Person records with custom_location + positions child table
+ *   - Ministers records with location + position child table
+ *
+ * Church Location links are resolved from existing ERPNext records only
+ * (Branch column matched against Church Location.location / name).
  *
  * Usage:
  *   node --env-file=.env.local scripts/import-ministers-to-erpnext.mjs
@@ -32,10 +34,11 @@ const writeAuth = `token ${WRITE_KEY}:${WRITE_SECRET}`;
 
 const stats = {
   positionTypesCreated: 0,
-  locationsCreated: 0,
-  personsCreated: 0,
-  personsUpdated: 0,
-  personsSkipped: 0,
+  locationsMatched: 0,
+  locationsMissing: 0,
+  ministersCreated: 0,
+  ministersUpdated: 0,
+  ministersSkipped: 0,
   errors: 0,
 };
 
@@ -44,11 +47,11 @@ function str(value) {
 }
 
 function parseFullName(name) {
-  const trimmed = name.trim().replace(/\s+/g, " ");
-  const parts = trimmed.split(" ");
-  const firstName = parts[0] ?? trimmed;
-  const lastName = parts.slice(1).join(" ") || firstName;
-  return { firstName, lastName, fullName: trimmed };
+  return name.trim().replace(/\s+/g, " ");
+}
+
+function isExecutiveCategory(category) {
+  return normalizeKey(category) === "apostle";
 }
 
 function ordainedStartDate(ordained) {
@@ -140,10 +143,10 @@ function normalizeKey(value) {
 }
 
 async function loadExistingMaps() {
-  const [positionTypes, locations, people] = await Promise.all([
+  const [positionTypes, locations, ministers] = await Promise.all([
     listAll("Position Type", ["name", "position"]),
     listAll("Church Location", ["name", "location"]),
-    listAll("Person", ["name", "full_name"]),
+    listAll("Ministers", ["name", "full_name"]),
   ]);
 
   const positionTypeSet = new Set(
@@ -152,17 +155,23 @@ async function loadExistingMaps() {
 
   const locationByText = new Map();
   for (const row of locations) {
+    const docName = str(row.name);
     const label = str(row.location);
-    if (label) locationByText.set(normalizeKey(label), row.name);
+    if (label) locationByText.set(normalizeKey(label), docName);
+    if (docName) locationByText.set(normalizeKey(docName), docName);
   }
 
-  const peopleByName = new Map();
-  for (const row of people) {
+  console.log(
+    `[import-ministers] Loaded ${locations.length} Church Location records from ERPNext.`
+  );
+
+  const ministersByName = new Map();
+  for (const row of ministers) {
     const label = str(row.full_name);
-    if (label) peopleByName.set(normalizeKey(label), row.name);
+    if (label) ministersByName.set(normalizeKey(label), row.name);
   }
 
-  return { positionTypeSet, locationByText, peopleByName };
+  return { positionTypeSet, locationByText, ministersByName };
 }
 
 async function ensurePositionType(category, cache) {
@@ -179,19 +188,19 @@ async function ensurePositionType(category, cache) {
   return category;
 }
 
-async function ensureChurchLocation(branch, cache) {
+async function resolveChurchLocation(branch, cache) {
   const label = str(branch);
   if (!label) return undefined;
 
-  const key = normalizeKey(label);
-  const existing = cache.locationByText.get(key);
-  if (existing) return existing;
+  const docName = cache.locationByText.get(normalizeKey(label));
+  if (docName) {
+    stats.locationsMatched += 1;
+    return docName;
+  }
 
-  const created = await createRecord("Church Location", { location: label });
-  cache.locationByText.set(key, created.name);
-  stats.locationsCreated += 1;
-  console.log(`+ Church Location: ${label} (${created.name})`);
-  return created.name;
+  stats.locationsMissing += 1;
+  console.warn(`! Church Location not found in ERPNext: "${label}"`);
+  return undefined;
 }
 
 function buildPositionRow(category, office, ordained) {
@@ -221,61 +230,64 @@ async function upsertMinister(row, cache) {
   const ordained = str(row.Ordained);
 
   if (!category || !name) {
-    stats.personsSkipped += 1;
+    stats.ministersSkipped += 1;
     return;
   }
 
   await ensurePositionType(category, cache);
   const locationId = branch
-    ? await ensureChurchLocation(branch, cache)
+    ? await resolveChurchLocation(branch, cache)
     : undefined;
 
-  const { firstName, lastName, fullName } = parseFullName(name);
+  const fullName = parseFullName(name);
   const positionRow = buildPositionRow(category, office, ordained);
-  const existingId = cache.peopleByName.get(normalizeKey(fullName));
+  const isExecutive = isExecutiveCategory(category) ? 1 : 0;
+  const existingId = cache.ministersByName.get(normalizeKey(fullName));
   const existing = existingId
     ? (
-        await api("GET", `/api/resource/Person/${encodeURIComponent(existingId)}`)
+        await api("GET", `/api/resource/Ministers/${encodeURIComponent(existingId)}`)
       ).json.data
     : null;
 
   if (!existing) {
     const payload = {
-      first_name: firstName,
-      last_name: lastName,
       full_name: fullName,
-      positions: [positionRow],
+      position: [positionRow],
+      is_executive: isExecutive,
     };
-    if (locationId) payload.custom_location = locationId;
+    if (locationId) payload.location = locationId;
 
-    const created = await createRecord("Person", payload);
-    cache.peopleByName.set(normalizeKey(fullName), created.name);
-    stats.personsCreated += 1;
-    console.log(`+ Person: ${fullName} (${created.name})`);
+    const created = await createRecord("Ministers", payload);
+    cache.ministersByName.set(normalizeKey(fullName), created.name);
+    stats.ministersCreated += 1;
+    console.log(`+ Ministers: ${fullName} (${created.name})`);
     return;
   }
 
   const updates = {};
-  if (locationId && str(existing.custom_location) !== locationId) {
-    updates.custom_location = locationId;
+  if (locationId && str(existing.location) !== locationId) {
+    updates.location = locationId;
+  }
+  if (Number(existing.is_executive) !== isExecutive) {
+    updates.is_executive = isExecutive;
   }
 
-  const positions = Array.isArray(existing.positions)
-    ? [...existing.positions]
+  const positionRows = Array.isArray(existing.position)
+    ? [...existing.position]
     : [];
-  if (!hasMatchingPosition(positions, category, office, ordained)) {
-    positions.push(positionRow);
-    updates.positions = positions;
+  if (!hasMatchingPosition(positionRows, category, office, ordained)) {
+    positionRows.push(positionRow);
+    updates.position = positionRows;
   }
 
   if (!Object.keys(updates).length) {
-    stats.personsSkipped += 1;
+    stats.ministersSkipped += 1;
     return;
   }
 
-  await updateRecord("Person", existing.name, updates);
-  stats.personsUpdated += 1;
-  console.log(`~ Person: ${fullName} (${existing.name})`);
+  await updateRecord("Ministers", existing.name, updates);
+  stats.ministersUpdated += 1;
+  console.log(`~ Ministers: ${fullName} (${existing.name})`);
 }
 
 async function main() {

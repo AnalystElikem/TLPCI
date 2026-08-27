@@ -10,7 +10,11 @@ import {
   getMinistryHero,
   getMinistryGallery,
 } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import { CmsMinistryHeroText } from "@/components/cms/CmsPageSections";
 import PrayersForSouls from "@/components/ministries/PrayersForSouls";
+
+const PAGE_ROUTE = "ministries/missions";
 
 export const metadata: Metadata = {
   title: "Missions",
@@ -39,23 +43,23 @@ const paths = [
 export const revalidate = 300;
 
 export default async function MissionsMinistryPage() {
-  const [hero, gallery] = await Promise.all([
+  const [heroImage, gallery, heroCms] = await Promise.all([
     getMinistryHero("Missions"),
     getMinistryGallery("Missions"),
+    getWebPageSection(PAGE_ROUTE, "hero"),
   ]);
   return (
     <>
       <section className="relative min-h-[380px] overflow-hidden md:min-h-[440px]">
-        <MinistryHeroMedia src={hero} alt="Missions" priority />
+        <MinistryHeroMedia src={heroImage} alt="Missions" priority />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/30" />
         <div className="absolute inset-0 flex flex-col justify-end px-4 pb-12 lg:px-16">
           <div className="mx-auto w-full max-w-[1100px]">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/75">
-              Go &amp; tell
-            </p>
-            <h1 className="mt-3 max-w-xl text-3xl font-bold uppercase leading-tight text-white sm:text-4xl md:text-6xl">
-              Taking the gospel to the nations
-            </h1>
+            <CmsMinistryHeroText
+              cms={heroCms}
+              fallbackEyebrow="Go & tell"
+              fallbackTitle="Taking the gospel to the nations"
+            />
           </div>
         </div>
       </section>

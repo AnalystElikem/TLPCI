@@ -48,7 +48,7 @@ export const navLinks = [
     label: "News & Events",
     href: "#",
     children: [
-      { label: "Blog", href: "/news-events/blog" },
+      { label: "Latest News", href: "/news-events/blog" },
       { label: "Events", href: "/news-events/events" },
     ],
   },

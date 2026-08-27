@@ -19,8 +19,16 @@ import {
   erpnextAttachments,
 } from "@/lib/erpnext";
 import { isStreamLive } from "@/lib/youtube";
-import { getDailyDevotion } from "@/lib/daily";
+import { dayOfYear } from "@/lib/daily";
+import { devotions, type Devotion } from "@/data/devotions";
 import { sanitizeHtml } from "@/lib/sanitize";
+import {
+  getWebPageContent,
+  getWebPageSection,
+  heroSlidesFromWebPage,
+  webImage,
+} from "@/lib/web-page-content";
+import { HOME_PAGE_ROUTE, pageRouteForBanner } from "@/lib/page-routes";
 
 // ---------------------------------------------------------------- date helpers
 const MONTHS = [
@@ -228,6 +236,30 @@ function isChurchItFunction(r: Record<string, string>): boolean {
   return "function_name" in r || "publish" in r;
 }
 
+/** Function flagged for the homepage poster slot (under the GO welcome). */
+function isAdFunction(r: Record<string, string | number | boolean>): boolean {
+  const raw = r.custom_is_ad;
+  if (raw === 1 || raw === true) return true;
+  const value = String(raw ?? "").trim().toLowerCase();
+  return value === "1" || value === "yes" || value === "true";
+}
+
+function withoutAdFunctions(rows: Record<string, string>[]): Record<string, string>[] {
+  return rows.filter((r) => !isAdFunction(r));
+}
+
+/** True when an ad should still appear in the homepage poster carousel. */
+function isRecentOrUpcomingAd(event: EventItem): boolean {
+  if (!isEventPast(event)) return true;
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const end = parseDate(event.endDateIso || event.startDateIso);
+  if (!end) return false;
+  const cutoff = new Date(today);
+  cutoff.setUTCDate(cutoff.getUTCDate() - 14);
+  return end.getTime() >= cutoff.getTime();
+}
+
 function sortByEventDate(rows: Record<string, string>[]) {
   rows.sort(
     (a, b) =>
@@ -236,9 +268,9 @@ function sortByEventDate(rows: Record<string, string>[]) {
   );
 }
 
-async function fetchPublishedFunctions(): Promise<
-  Record<string, string>[] | null
-> {
+async function fetchPublishedFunctions(
+  options: { fresh?: boolean } = {}
+): Promise<Record<string, string>[] | null> {
   const churchItRows = await erpnextList<Record<string, string>>("Function", {
     fields: [
       "name",
@@ -256,8 +288,10 @@ async function fetchPublishedFunctions(): Promise<
       "allow_sign_ups",
       "attendance_total",
       "custom_event_poster",
+      "custom_is_ad",
     ],
     filters: [["publish", "=", 1]],
+    fresh: options.fresh,
   });
   if (churchItRows !== null) return churchItRows;
 
@@ -391,26 +425,68 @@ function mapFunction(
   };
 }
 
-/** Church-wide functions for the homepage + Events page. */
+/** Church-wide functions for the homepage + Events page (excludes ad poster slots). */
 export async function getEvents(): Promise<EventItem[]> {
   const rows = await fetchPublishedFunctions();
   if (!rows || rows.length === 0) return fallbackEvents;
 
-  if (rows.some(isChurchItFunction)) {
+  const eligible = withoutAdFunctions(rows);
+
+  if (eligible.some(isChurchItFunction)) {
     const ministryMap = await fetchMinistryNameMap(
-      rows.map((r) => eventMinistryOf(r))
+      eligible.map((r) => eventMinistryOf(r))
     );
-    const addressMap = await fetchAddressMap(rows.map((r) => r.address ?? ""));
-    const churchWide = rows.filter((r) => isChurchWideFunction(r, ministryMap));
+    const addressMap = await fetchAddressMap(eligible.map((r) => r.address ?? ""));
+    const churchWide = eligible.filter((r) => isChurchWideFunction(r, ministryMap));
     sortByEventDate(churchWide);
     return churchWide.map((r, i) => mapFunction(r, i, addressMap, ministryMap));
   }
 
-  const churchWide = rows.filter((r) =>
+  const churchWide = eligible.filter((r) =>
     CHURCH_WIDE.has(eventMinistryOf(r))
   );
   sortByEventDate(churchWide);
   return churchWide.map(mapWebsiteEvent);
+}
+
+/** Homepage poster carousel — recent/upcoming ad functions (excludes events list). */
+export async function getHomeAdvertisementBanners(): Promise<EventItem[]> {
+  const rows = await fetchPublishedFunctions({ fresh: true });
+  if (!rows?.length) return [];
+
+  const ads = rows.filter(isAdFunction);
+  if (!ads.length) return [];
+
+  let items: EventItem[];
+  if (rows.some(isChurchItFunction)) {
+    const ministryMap = await fetchMinistryNameMap(
+      ads.map((r) => eventMinistryOf(r))
+    );
+    const addressMap = await fetchAddressMap(ads.map((r) => r.address ?? ""));
+    items = ads.map((r, i) => mapFunction(r, i, addressMap, ministryMap));
+  } else {
+    items = ads.map((r, i) => mapWebsiteEvent(r, i));
+  }
+
+  const eligible = items.filter(isRecentOrUpcomingAd);
+
+  const upcoming = eligible
+    .filter((event) => !isEventPast(event))
+    .sort(
+      (a, b) =>
+        (parseDate(a.startDateIso)?.getTime() ?? 0) -
+        (parseDate(b.startDateIso)?.getTime() ?? 0)
+    );
+
+  const recent = eligible
+    .filter((event) => isEventPast(event))
+    .sort(
+      (a, b) =>
+        (parseDate(b.endDateIso || b.startDateIso)?.getTime() ?? 0) -
+        (parseDate(a.endDateIso || a.startDateIso)?.getTime() ?? 0)
+    );
+
+  return [...upcoming, ...recent];
 }
 
 /** The next published function tagged to a given ministry (or null). */
@@ -435,7 +511,7 @@ async function ministryTaggedFunctions(
       rows.map((r) => eventLinkedMinistryOf(r)).filter(Boolean)
     );
     const addressMap = await fetchAddressMap(rows.map((r) => r.address ?? ""));
-    const tagged = rows.filter(
+    const tagged = withoutAdFunctions(rows).filter(
       (r) => eventLinkedMinistryOf(r) === ministryId
     );
     if (!tagged.length) return [];
@@ -443,7 +519,9 @@ async function ministryTaggedFunctions(
     return tagged.map((r, i) => mapFunction(r, i, addressMap, ministryMap));
   }
 
-  const tagged = rows.filter((r) => eventLinkedMinistryOf(r) === ministryId);
+  const tagged = withoutAdFunctions(rows).filter(
+    (r) => eventLinkedMinistryOf(r) === ministryId
+  );
   if (!tagged.length) return [];
   sortByEventDate(tagged);
   return tagged.map((r, i) => mapWebsiteEvent(r, i));
@@ -496,22 +574,24 @@ export async function getEvent(id: string): Promise<EventItem | null> {
   return mapWebsiteEvent(row, 0);
 }
 
-/** All published functions (church-wide and ministry) for detail routes. */
+/** All published functions for detail routes (excludes homepage ad poster slots). */
 export async function getAllEvents(): Promise<EventItem[]> {
   const rows = await fetchPublishedFunctions();
   if (!rows || rows.length === 0) return fallbackEvents;
 
-  if (rows.some(isChurchItFunction)) {
+  const eligible = withoutAdFunctions(rows);
+
+  if (eligible.some(isChurchItFunction)) {
     const ministryMap = await fetchMinistryNameMap(
-      rows.map((r) => eventMinistryOf(r))
+      eligible.map((r) => eventMinistryOf(r))
     );
-    const addressMap = await fetchAddressMap(rows.map((r) => r.address ?? ""));
-    sortByEventDate(rows);
-    return rows.map((r, i) => mapFunction(r, i, addressMap, ministryMap));
+    const addressMap = await fetchAddressMap(eligible.map((r) => r.address ?? ""));
+    sortByEventDate(eligible);
+    return eligible.map((r, i) => mapFunction(r, i, addressMap, ministryMap));
   }
 
-  sortByEventDate(rows);
-  return rows.map(mapWebsiteEvent);
+  sortByEventDate(eligible);
+  return eligible.map(mapWebsiteEvent);
 }
 
 // ------------------------------------------------------------------------ Blog
@@ -1007,7 +1087,13 @@ export async function getLivestream(): Promise<LivestreamInfo> {
 }
 
 // ---------------------------------------------------------------- Hero slides
-export type HeroSlide = { title: string; text: string; image: string };
+export type HeroSlide = {
+  title: string;
+  text: string;
+  image: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+};
 
 /** Returns null when ERPNext has no slides — the slider keeps its built-in ones. */
 export async function getHeroSlides(): Promise<HeroSlide[] | null> {
@@ -1025,6 +1111,17 @@ export async function getHeroSlides(): Promise<HeroSlide[] | null> {
     }))
     .filter((s) => s.image);
   return slides.length ? slides : null;
+}
+
+/**
+ * Homepage carousel — Web Page hero blocks first (Page Builder), then legacy
+ * Hero Slide records, then null so the component uses built-in defaults.
+ */
+export async function getHomeHeroSlides(): Promise<HeroSlide[] | null> {
+  const sections = await getWebPageContent(HOME_PAGE_ROUTE);
+  const fromPageBuilder = heroSlidesFromWebPage(sections);
+  if (fromPageBuilder.length) return fromPageBuilder;
+  return getHeroSlides();
 }
 
 // -------------------------------------------------------------- Home settings
@@ -1067,6 +1164,7 @@ type LeaderListRow = {
   name1?: string;
   leader?: string;
   person?: string;
+  minister?: string;
   image?: string;
   idx?: number;
 };
@@ -1085,12 +1183,12 @@ function ministryLeaderListOf(
   return Array.isArray(rows) ? (rows as LeaderListRow[]) : [];
 }
 
-function leaderPersonIdOf(row: LeaderListRow): string {
-  return (row.name1 ?? row.leader ?? row.person ?? "").trim();
+function leaderMinisterIdOf(row: LeaderListRow): string {
+  return (row.name1 ?? row.minister ?? row.leader ?? row.person ?? "").trim();
 }
 
-/** Current or most recent position title(s) from a Person record. */
-function personTitleOf(positions?: PersonPositionRow[]): string {
+/** Current or most recent position title(s) from a Ministers position table. */
+function ministerTitleOf(positions?: PersonPositionRow[]): string {
   if (!positions?.length) return "";
   const current = positions.filter((p) => !p.end_date?.trim());
   const pool = current.length ? current : positions;
@@ -1105,7 +1203,7 @@ function personTitleOf(positions?: PersonPositionRow[]): string {
     .join(" · ");
 }
 
-/** Leaders for a ministry (empty when none in ERPNext). */
+/** Leaders for a ministry from ERPNext Ministers linked on the Ministry record. */
 export async function getMinistryLeaders(
   siteMinistry: string
 ): Promise<MinistryLeader[]> {
@@ -1128,23 +1226,23 @@ export async function getMinistryLeaders(
 
   const leaders = await Promise.all(
     sorted.map(async (row): Promise<MinistryLeader | null> => {
-      const personId = leaderPersonIdOf(row);
-      if (!personId) return null;
+      const ministerId = leaderMinisterIdOf(row);
+      if (!ministerId) return null;
 
-      const person = await erpnextDoc<{
+      const minister = await erpnextDoc<{
         full_name?: string;
         photo?: string;
-        positions?: PersonPositionRow[];
-      }>("Person", personId, { fresh: true });
+        position?: PersonPositionRow[];
+      }>("Ministers", ministerId, { fresh: true });
 
-      if (!person?.full_name?.trim()) return null;
+      if (!minister?.full_name?.trim()) return null;
 
       return {
-        name: person.full_name.trim(),
-        role: personTitleOf(person.positions),
+        name: minister.full_name.trim(),
+        role: ministerTitleOf(minister.position),
         image:
           absoluteFileUrl(row.image) ??
-          absoluteFileUrl(person.photo) ??
+          absoluteFileUrl(minister.photo) ??
           "",
       };
     })
@@ -1194,7 +1292,18 @@ export async function getMinistryGallery(
 }
 
 // --------------------------------------------------------------- Page banner
-export async function getPageBanner(page: string): Promise<string | null> {
+/** Banner image — Web Page hero block first, then Page Banner DocType. */
+export async function getPageBanner(
+  page: string,
+  route?: string
+): Promise<string | null> {
+  const cmsRoute = route ?? pageRouteForBanner(page);
+  if (cmsRoute) {
+    const hero = await getWebPageSection(cmsRoute, "hero");
+    const cmsImage = webImage(hero, "image");
+    if (cmsImage) return cmsImage;
+  }
+
   const rows = await erpnextList<Record<string, string>>("Page Banner", {
     fields: ["page", "banner_image"],
     filters: [["page", "=", page]],
@@ -1347,63 +1456,107 @@ function htmlToParagraphs(html?: string | null): string[] {
 }
 
 /**
- * Leadership for the Leadership page. Uses ERPNext records where present and
- * falls back to the in-code people/photos otherwise. Council and Past Overseer
- * images are the main thing this unlocks (their photos start empty in code).
+ * Leadership for the Leadership page. Executive ministers (is_executive) come
+ * from the Ministers doctype. Past overseers still use Executive Committee
+ * when published there.
  */
 export async function getLeadership(): Promise<Leadership> {
-  const rows = await erpnextList<Record<string, string>>(
-    "Executive Committee",
-    {
-      fields: [
-        "full_name", "role", "category", "image",
-        "tenure", "note", "bio", "display_order",
-      ],
-      filters: [["is_published", "=", 1]],
-      orderBy: "display_order asc",
-    }
-  );
-
   const fallback: Leadership = {
     generalOverseer: fallbackGO as LeaderGO,
     council: fallbackCouncil as CouncilMember[],
     pastOverseers: fallbackPast as PastOverseer[],
   };
-  if (!rows || rows.length === 0) return fallback;
 
-  const goRow = rows.find((r) => r.category === "General Overseer");
-  const councilRows = rows.filter((r) => r.category === "Executive Council");
-  const pastRows = rows.filter((r) => r.category === "Past Overseer");
+  const ministerRecords = await fetchAllMinisterRecords();
+  const executives = ministerRecords.filter(isExecutiveMinister);
 
-  const generalOverseer: LeaderGO = goRow
-    ? {
-        // Keep the rich in-code GO copy; override name/image/bio if ERPNext has them.
+  let generalOverseer: LeaderGO = fallback.generalOverseer;
+  let council: CouncilMember[] = fallback.council;
+
+  if (executives.length) {
+    const goRecord = executives.find(isGeneralOverseerRecord) ?? null;
+    const councilRecords = goRecord
+      ? executives.filter((record) => record.name !== goRecord.name)
+      : executives;
+
+    if (goRecord?.full_name?.trim()) {
+      generalOverseer = {
         ...(fallbackGO as LeaderGO),
-        name: goRow.full_name || fallbackGO.name,
-        role: goRow.role || fallbackGO.role,
-        image: absoluteFileUrl(goRow.image) ?? fallbackGO.image,
-        bio: htmlToParagraphs(goRow.bio).length
-          ? htmlToParagraphs(goRow.bio)
-          : (fallbackGO.bio as string[]),
+        name: goRecord.full_name.trim(),
+        role: ministerExecutiveRoleOf(goRecord) || fallbackGO.role,
+        image: absoluteFileUrl(goRecord.photo) ?? fallbackGO.image,
+        bio: fallbackGO.bio as string[],
+      };
+    }
+
+    if (councilRecords.length) {
+      council = councilRecords
+        .filter((record) => record.full_name?.trim())
+        .map((record) => ({
+          name: record.full_name!.trim(),
+          role: ministerExecutiveRoleOf(record),
+          image: absoluteFileUrl(record.photo) ?? "",
+        }));
+    }
+  } else {
+    const rows = await erpnextList<Record<string, string>>(
+      "Executive Committee",
+      {
+        fields: [
+          "full_name", "role", "category", "image",
+          "tenure", "note", "bio", "display_order",
+        ],
+        filters: [["is_published", "=", 1]],
+        orderBy: "display_order asc",
       }
-    : (fallbackGO as LeaderGO);
+    );
 
-  const council: CouncilMember[] = councilRows.length
-    ? councilRows.map((r) => ({
-        name: r.full_name ?? "",
-        role: r.role ?? "",
-        image: absoluteFileUrl(r.image) ?? "",
-      }))
-    : (fallbackCouncil as CouncilMember[]);
+    if (rows?.length) {
+      const goRow = rows.find((r) => r.category === "General Overseer");
+      const councilRows = rows.filter((r) => r.category === "Executive Council");
 
-  const pastOverseers: PastOverseer[] = pastRows.length
+      if (goRow) {
+        generalOverseer = {
+          ...(fallbackGO as LeaderGO),
+          name: goRow.full_name || fallbackGO.name,
+          role: goRow.role || fallbackGO.role,
+          image: absoluteFileUrl(goRow.image) ?? fallbackGO.image,
+          bio: htmlToParagraphs(goRow.bio).length
+            ? htmlToParagraphs(goRow.bio)
+            : (fallbackGO.bio as string[]),
+        };
+      }
+
+      if (councilRows.length) {
+        council = councilRows.map((r) => ({
+          name: r.full_name ?? "",
+          role: r.role ?? "",
+          image: absoluteFileUrl(r.image) ?? "",
+        }));
+      }
+    }
+  }
+
+  const pastRows = await erpnextList<Record<string, string>>(
+    "Executive Committee",
+    {
+      fields: ["full_name", "role", "category", "image", "tenure", "note"],
+      filters: [
+        ["is_published", "=", 1],
+        ["category", "=", "Past Overseer"],
+      ],
+      orderBy: "display_order asc",
+    }
+  );
+
+  const pastOverseers: PastOverseer[] = pastRows?.length
     ? pastRows.map((r) => ({
         name: r.full_name ?? "",
         note: r.note ?? "",
         tenure: r.tenure ?? "",
         image: absoluteFileUrl(r.image) ?? "",
       }))
-    : (fallbackPast as PastOverseer[]);
+    : fallback.pastOverseers;
 
   return { generalOverseer, council, pastOverseers };
 }
@@ -1420,57 +1573,26 @@ export type DevotionItem = {
   reflectionHtml: string;
   prayerFocus: string;
   image?: string | null;
-  fromErpnext: boolean;
 };
 
-const DEVOTION_FIELDS = [
-  "name",
-  "title",
-  "date",
-  "scripture_reference",
-  "scripture_text",
-  "key_message",
-  "reflection",
-  "prayer_focus",
-  "devotion_image",
-];
-
-function mapDevotionRow(r: Record<string, string>): DevotionItem {
-  const reflectionRaw = r.reflection ?? "";
-  const reflectionHtml = sanitizeHtml(reflectionRaw);
-  const reflectionText = reflectionHtml
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  return {
-    id: r.name ?? "",
-    title: r.title ?? "Daily Devotion",
-    dateLabel: fmtLong(r.date),
-    scriptureReference: r.scripture_reference ?? "",
-    scriptureText: r.scripture_text ?? "",
-    keyMessage: r.key_message ?? "",
-    reflection: reflectionText || reflectionRaw,
-    reflectionHtml,
-    prayerFocus: r.prayer_focus ?? "",
-    image: absoluteFileUrl(r.devotion_image),
-    fromErpnext: true,
-  };
-}
-
-function fallbackDevotionItem(): DevotionItem {
-  const devotion = getDailyDevotion();
-  const dateLabel = new Date().toLocaleDateString("en-GB", {
+function devotionDateLabel(date: Date = new Date()): string {
+  return date.toLocaleDateString("en-GB", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   });
+}
 
+function mapHardcodedDevotion(
+  devotion: Devotion,
+  index: number,
+  dateLabel?: string
+): DevotionItem {
   return {
-    id: "fallback",
+    id: String(index),
     title: devotion.topic,
-    dateLabel,
+    dateLabel: dateLabel ?? devotion.ref,
     scriptureReference: devotion.ref,
     scriptureText: devotion.verse,
     keyMessage: devotion.message,
@@ -1478,7 +1600,6 @@ function fallbackDevotionItem(): DevotionItem {
     reflectionHtml: "",
     prayerFocus: devotion.prayer,
     image: null,
-    fromErpnext: false,
   };
 }
 
@@ -1486,31 +1607,30 @@ export function devotionPath(id: string): string {
   return `/media/devotions/${encodeURIComponent(id)}`;
 }
 
-/** Latest Devotion record from Church IT (by date), or the rotating fallback. */
+/** Today's devotion from the in-code daily rotation. */
 export async function getLatestDevotion(): Promise<DevotionItem> {
-  const rows = await erpnextList<Record<string, string>>("Devotion", {
-    fields: DEVOTION_FIELDS,
-    orderBy: "date desc, modified desc",
-    limit: 1,
-  });
-
-  if (!rows?.length) return fallbackDevotionItem();
-  return mapDevotionRow(rows[0]);
+  const index = dayOfYear() % devotions.length;
+  return mapHardcodedDevotion(devotions[index], index, devotionDateLabel());
 }
 
 export async function getDevotions(): Promise<DevotionItem[]> {
-  const rows = await erpnextList<Record<string, string>>("Devotion", {
-    fields: DEVOTION_FIELDS,
-    orderBy: "date desc, modified desc",
-  });
-  if (!rows?.length) return [];
-  return rows.map(mapDevotionRow);
+  const todayIndex = dayOfYear() % devotions.length;
+  const items = devotions.map((d, i) => mapHardcodedDevotion(d, i));
+  const today = items[todayIndex];
+  const rest = items.filter((_, i) => i !== todayIndex);
+  return [today, ...rest];
 }
 
 export async function getDevotion(id: string): Promise<DevotionItem | null> {
-  const row = await erpnextDoc<Record<string, string>>("Devotion", id);
-  if (!row) return null;
-  return mapDevotionRow(row);
+  const index = Number(decodeURIComponent(id));
+  if (!Number.isInteger(index) || index < 0 || index >= devotions.length) {
+    return null;
+  }
+  const item = mapHardcodedDevotion(devotions[index], index);
+  if (index === dayOfYear() % devotions.length) {
+    item.dateLabel = devotionDateLabel();
+  }
+  return item;
 }
 
 // --------------------------------------------------------------- Testimonies
@@ -1635,46 +1755,17 @@ export type MinisterPosition = {
   current: boolean;
 };
 
-export type MinisterLifeEvent = {
-  type: string;
-  date: string;
-  dateLabel: string;
-};
-
 export type MinisterDetail = Minister & {
-  bio?: string;
-  bioHtml?: string;
   positions: MinisterPosition[];
-  lifeEvents: MinisterLifeEvent[];
-  spouseName?: string;
 };
 
-type PersonLifeEvent = {
-  event_type?: string;
-  date?: string;
-};
-
-type PersonEmailRow = {
-  email_address?: string;
-  is_primary?: number;
-};
-
-type PersonPhoneRow = {
-  phone_number?: string;
-  is_primary?: number;
-};
-
-type MinisterPersonRecord = {
+type MinistersRecord = {
   name?: string;
   full_name?: string;
   photo?: string;
-  notes?: string;
-  spouse?: string;
-  custom_location?: string;
-  positions?: PersonPositionRow[];
-  life_events?: PersonLifeEvent[];
-  emails?: PersonEmailRow[];
-  phones?: PersonPhoneRow[];
+  location?: string;
+  is_executive?: number | boolean;
+  position?: PersonPositionRow[];
 };
 
 const MINISTER_RANK_ORDER = [
@@ -1740,16 +1831,9 @@ function ministerOfficeOf(
   return [...new Set([...titles, ...notes])].join(" · ");
 }
 
-function ministerOrdainedYear(
-  lifeEvents?: PersonLifeEvent[],
-  positionStart?: string
-): string | undefined {
-  const ordination = lifeEvents?.find((event) =>
-    /ordin/i.test(event.event_type ?? "")
-  );
-  const date = ordination?.date ?? positionStart;
-  if (!date) return undefined;
-  const year = date.slice(0, 4);
+function ministerOrdainedYear(positionStart?: string): string | undefined {
+  if (!positionStart) return undefined;
+  const year = positionStart.slice(0, 4);
   return /^\d{4}$/.test(year) ? year : undefined;
 }
 
@@ -1765,78 +1849,66 @@ function mapMinisterPositions(
   }));
 }
 
-function mapMinisterLifeEvents(
-  lifeEvents?: PersonLifeEvent[]
-): MinisterLifeEvent[] {
-  return (lifeEvents ?? [])
-    .filter((event) => event.event_type?.trim() && event.date?.trim())
-    .map((event) => ({
-      type: event.event_type!.trim(),
-      date: event.date!.trim(),
-      dateLabel: fmtLong(event.date) || event.date!.trim(),
-    }))
-    .sort((a, b) => {
-      const aTime = parseDate(a.date)?.getTime() ?? 0;
-      const bTime = parseDate(b.date)?.getTime() ?? 0;
-      return bTime - aTime;
-    });
+function isExecutiveMinister(record: MinistersRecord): boolean {
+  return Number(record.is_executive) === 1 || record.is_executive === true;
 }
 
-function mapPersonToMinister(
-  person: MinisterPersonRecord,
+function isGeneralOverseerRecord(record: MinistersRecord): boolean {
+  return currentPersonPositions(record.position).some((row) =>
+    /general overseer/i.test(row.notes ?? "")
+  );
+}
+
+function ministerExecutiveRoleOf(record: MinistersRecord): string {
+  const pool = sortedPersonPositions(currentPersonPositions(record.position));
+  const primary = pool[0];
+  return primary?.notes?.trim() || primary?.position?.trim() || "";
+}
+
+function mapMinistersRecordToMinister(
+  record: MinistersRecord,
   locationMap?: Map<string, string>
 ): Minister | null {
-  const primaryType = primaryMinisterType(person.positions);
-  if (!primaryType || !person.full_name?.trim()) return null;
+  const primaryType = primaryMinisterType(record.position);
+  if (!primaryType || !record.full_name?.trim()) return null;
 
   const minister: Minister = {
-    id: person.name ?? person.full_name.trim(),
-    name: person.full_name.trim(),
+    id: record.name ?? record.full_name.trim(),
+    name: record.full_name.trim(),
     positionType: primaryType,
     rank: ministerRankPlural(primaryType),
   };
 
-  const office = ministerOfficeOf(person.positions, primaryType);
+  const office = ministerOfficeOf(record.position, primaryType);
   if (office) minister.office = office;
 
-  const locationId = person.custom_location?.trim();
+  const locationId = record.location?.trim();
   const branch = locationId ? locationMap?.get(locationId) : undefined;
   if (branch) minister.branch = branch;
 
   const primaryStart = sortedPersonPositions(
-    currentPersonPositions(person.positions)
+    currentPersonPositions(record.position)
   )[0]?.start_date;
-  const ordained = ministerOrdainedYear(person.life_events, primaryStart);
+  const ordained = ministerOrdainedYear(primaryStart);
   if (ordained) minister.ordained = ordained;
 
-  const photo = absoluteFileUrl(person.photo);
+  const photo = absoluteFileUrl(record.photo);
   if (photo) minister.photo = photo;
 
   return minister;
 }
 
-function mapPersonToMinisterDetail(
-  person: MinisterPersonRecord,
-  spouseName?: string,
+function mapMinistersRecordToDetail(
+  record: MinistersRecord,
   locationMap?: Map<string, string>
 ): MinisterDetail | null {
-  const base = mapPersonToMinister(person, locationMap);
+  const base = mapMinistersRecordToMinister(record, locationMap);
   if (!base) return null;
 
-  const notes = person.notes?.trim() ?? "";
-  const detail: MinisterDetail = {
+  return {
     ...base,
-    positions: mapMinisterPositions(person.positions),
-    lifeEvents: mapMinisterLifeEvents(person.life_events),
+    positions: mapMinisterPositions(record.position),
   };
-
-  if (notes) {
-    detail.bio = htmlToParagraphs(notes).join("\n\n") || notes.replace(/<[^>]+>/g, "");
-    detail.bioHtml = sanitizeHtml(notes);
-  }
-  if (spouseName) detail.spouseName = spouseName;
-
-  return detail;
 }
 
 async function fetchChurchLocationMap(): Promise<Map<string, string>> {
@@ -1856,34 +1928,39 @@ async function fetchChurchLocationMap(): Promise<Map<string, string>> {
   return map;
 }
 
-/** Ministers grouped by current Position Type from ERPNext Person records. */
-export async function getMinisters(): Promise<MinisterGroup[]> {
-  const people = await erpnextList<{ name?: string }>("Person", {
+async function fetchAllMinisterRecords(): Promise<MinistersRecord[]> {
+  const rows = await erpnextList<{ name?: string }>("Ministers", {
     fields: ["name"],
     orderBy: "full_name asc",
     fresh: true,
   });
-  if (!people?.length) return [];
+  if (!rows?.length) return [];
 
-  const locationMap = await fetchChurchLocationMap();
-
-  const records = (
+  return (
     await Promise.all(
-      people.map(async (row) => {
+      rows.map(async (row) => {
         if (!row.name) return null;
-        return erpnextDoc<MinisterPersonRecord>("Person", row.name, {
+        return erpnextDoc<MinistersRecord>("Ministers", row.name, {
           fresh: true,
         });
       })
     )
-  ).filter((person): person is MinisterPersonRecord =>
-    Boolean(person?.full_name?.trim())
+  ).filter((record): record is MinistersRecord =>
+    Boolean(record?.full_name?.trim())
   );
+}
+
+/** Ministers grouped by current Position Type from ERPNext Ministers records. */
+export async function getMinisters(): Promise<MinisterGroup[]> {
+  const [records, locationMap] = await Promise.all([
+    fetchAllMinisterRecords(),
+    fetchChurchLocationMap(),
+  ]);
 
   const byRank = new Map<string, Minister[]>();
 
-  for (const person of records) {
-    const minister = mapPersonToMinister(person, locationMap);
+  for (const record of records) {
+    const minister = mapMinistersRecordToMinister(record, locationMap);
     if (!minister) continue;
 
     if (!byRank.has(minister.positionType)) {
@@ -1905,28 +1982,18 @@ export async function getMinisters(): Promise<MinisterGroup[]> {
     }));
 }
 
-/** Single minister profile from a Person record (must have a position). */
+/** Single minister profile from a Ministers record (must have a position). */
 export async function getMinister(id: string): Promise<MinisterDetail | null> {
-  const person = await erpnextDoc<MinisterPersonRecord>("Person", id, {
+  const record = await erpnextDoc<MinistersRecord>("Ministers", id, {
     fresh: true,
   });
-  if (!person) return null;
-
-  let spouseName: string | undefined;
-  if (person.spouse?.trim()) {
-    const spouse = await erpnextDoc<{ full_name?: string }>(
-      "Person",
-      person.spouse.trim(),
-      { fresh: true }
-    );
-    spouseName = spouse?.full_name?.trim() || undefined;
-  }
+  if (!record) return null;
 
   const locationMap = await fetchChurchLocationMap();
-  return mapPersonToMinisterDetail(person, spouseName, locationMap);
+  return mapMinistersRecordToDetail(record, locationMap);
 }
 
-/** Person IDs for ministers (used for static generation and links). */
+/** Minister IDs for static generation and links. */
 export async function getMinisterIds(): Promise<string[]> {
   const groups = await getMinisters();
   return groups.flatMap((group) => group.ministers.map((m) => m.id));

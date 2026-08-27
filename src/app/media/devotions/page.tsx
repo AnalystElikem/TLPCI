@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, ArrowRight } from "lucide-react";
-import { CHURCH_LOGO } from "@/lib/constants";
 import { devotionPath, getDevotions } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import { CmsCompactHeader } from "@/components/cms/CmsPageSections";
+
+const PAGE_ROUTE = "media/devotions";
 
 export const metadata: Metadata = {
   title: "Devotions",
@@ -14,33 +17,25 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function DevotionsPage() {
-  const devotions = await getDevotions();
+  const [devotions, hero] = await Promise.all([
+    getDevotions(),
+    getWebPageSection(PAGE_ROUTE, "hero"),
+  ]);
   const [featured, ...rest] = devotions;
 
   return (
     <>
-      <section className="border-b border-border bg-white">
-        <div className="mx-auto max-w-[1200px] px-4 py-10 lg:px-8 lg:py-12">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-            Media
-          </p>
-          <h1 className="mt-2 text-3xl font-bold uppercase text-foreground md:text-5xl">
-            Devotions
-          </h1>
-          <p className="mt-3 max-w-xl text-text-muted">
-            Grow daily through scripture, key messages, reflection, and prayer
-            from Church IT.
-          </p>
-        </div>
-      </section>
+      <CmsCompactHeader
+        cms={hero}
+        fallbackEyebrow="Media"
+        fallbackTitle="Devotions"
+        fallbackSubtitle="Grow daily through scripture, key messages, reflection, and prayer. A new devotion is featured each day from our built-in library."
+      />
 
       {devotions.length === 0 ? (
         <section className="bg-muted-surface py-16 lg:py-24">
           <div className="mx-auto max-w-[1200px] px-4 text-center lg:px-8">
-            <p className="text-text-muted">
-              No devotions are published yet. Add entries in Church IT under{" "}
-              <strong>Devotion</strong> and they will appear here automatically.
-            </p>
+            <p className="text-text-muted">Devotions are not available right now.</p>
           </div>
         </section>
       ) : (
@@ -48,11 +43,15 @@ export default async function DevotionsPage() {
           <section className="bg-muted-surface py-14 lg:py-20">
             <div className="mx-auto max-w-[1200px] px-4 lg:px-8">
               <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
-                Latest devotion
+                Today&apos;s devotion
               </p>
-              <article className="mt-4 grid overflow-hidden bg-white shadow-sm lg:grid-cols-[1.2fr_1fr]">
-                <div className="relative min-h-[260px] lg:min-h-[360px]">
-                  {featured.image ? (
+              <article
+                className={`mt-4 grid overflow-hidden bg-white shadow-sm ${
+                  featured.image ? "lg:grid-cols-[1.2fr_1fr]" : ""
+                }`}
+              >
+                {featured.image ? (
+                  <div className="relative min-h-[260px] lg:min-h-[360px]">
                     <Image
                       src={featured.image}
                       alt={featured.title}
@@ -61,14 +60,17 @@ export default async function DevotionsPage() {
                       sizes="(max-width: 1024px) 100vw, 60vw"
                       priority
                     />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-secondary-dark via-secondary to-primary" />
-                  )}
-                  <span className="date-badge absolute left-4 top-4">
-                    {featured.dateLabel}
-                  </span>
-                </div>
+                    <span className="date-badge absolute left-4 top-4">
+                      {featured.dateLabel}
+                    </span>
+                  </div>
+                ) : null}
                 <div className="flex flex-col justify-center p-6 md:p-10">
+                  {!featured.image && (
+                    <span className="date-badge mb-4 w-fit">
+                      {featured.dateLabel}
+                    </span>
+                  )}
                   {featured.scriptureReference && (
                     <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary">
                       <BookOpen className="h-4 w-4" />
@@ -107,10 +109,14 @@ export default async function DevotionsPage() {
                     <li key={devotion.id}>
                       <Link
                         href={devotionPath(devotion.id)}
-                        className="group grid gap-4 py-5 transition-colors hover:bg-muted-surface sm:grid-cols-[140px_1fr_auto] sm:items-center sm:gap-6 sm:px-2"
+                        className={`group grid gap-4 py-5 transition-colors hover:bg-muted-surface sm:items-center sm:gap-6 sm:px-2 ${
+                          devotion.image
+                            ? "sm:grid-cols-[140px_1fr_auto]"
+                            : "sm:grid-cols-[1fr_auto]"
+                        }`}
                       >
-                        <div className="relative aspect-video overflow-hidden bg-muted-surface sm:aspect-[4/3]">
-                          {devotion.image ? (
+                        {devotion.image ? (
+                          <div className="relative aspect-video overflow-hidden bg-muted-surface sm:aspect-[4/3]">
                             <Image
                               src={devotion.image}
                               alt=""
@@ -118,18 +124,8 @@ export default async function DevotionsPage() {
                               className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                               sizes="140px"
                             />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-secondary/20 to-primary/20">
-                              <Image
-                                src={CHURCH_LOGO}
-                                alt=""
-                                width={40}
-                                height={40}
-                                className="h-10 w-10 object-contain opacity-80"
-                              />
-                            </div>
-                          )}
-                        </div>
+                          </div>
+                        ) : null}
                         <div>
                           {devotion.scriptureReference && (
                             <p className="text-xs font-bold uppercase tracking-wide text-primary">

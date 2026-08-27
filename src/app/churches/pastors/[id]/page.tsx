@@ -101,9 +101,6 @@ export default async function MinisterDetailPage({ params }: Props) {
                 {minister.ordained && (
                   <span>Ordained {minister.ordained}</span>
                 )}
-                {minister.spouseName && (
-                  <span>Spouse: {minister.spouseName}</span>
-                )}
               </div>
             </div>
           </div>
@@ -111,79 +108,32 @@ export default async function MinisterDetailPage({ params }: Props) {
       </section>
 
       <section className="bg-muted-surface py-14 lg:py-20">
-        <div className="mx-auto grid max-w-[1100px] gap-10 px-4 lg:grid-cols-[1fr_minmax(0,340px)] lg:gap-12 lg:px-8">
-          <div className="space-y-8">
-            {(minister.bioHtml || minister.bio) && (
-              <div className="bg-white p-6 shadow-sm md:p-8">
-                <span className="section-accent" />
-                <h2 className="font-serif text-xl font-bold text-foreground md:text-2xl">
-                  About
-                </h2>
-                {minister.bioHtml ? (
-                  <div
-                    className="prose prose-sm mt-5 max-w-none text-text-muted md:prose-base"
-                    dangerouslySetInnerHTML={{ __html: minister.bioHtml }}
-                  />
-                ) : (
-                  <p className="mt-5 whitespace-pre-line leading-relaxed text-text-muted">
-                    {minister.bio}
+        <div className="mx-auto max-w-[900px] px-4 lg:px-8">
+          <div className="bg-white p-6 shadow-sm md:p-8">
+            <span className="section-accent" />
+            <h2 className="font-serif text-xl font-bold text-foreground">
+              Positions held
+            </h2>
+            <ul className="mt-5 space-y-4">
+              {minister.positions.map((position, index) => (
+                <li
+                  key={`${position.title}-${position.startDate}-${index}`}
+                  className="border-l-2 border-primary pl-4"
+                >
+                  <p className="font-bold text-foreground">{position.title}</p>
+                  <p className="mt-1 text-sm text-text-muted">
+                    {formatServiceDates(position.startDate, position.endDate)}
+                    {position.current ? " · Current" : ""}
                   </p>
-                )}
-              </div>
-            )}
-
-            {minister.lifeEvents.length > 0 && (
-              <div className="bg-white p-6 shadow-sm md:p-8">
-                <span className="section-accent" />
-                <h2 className="font-serif text-xl font-bold text-foreground md:text-2xl">
-                  Milestones
-                </h2>
-                <ul className="mt-5 space-y-3">
-                  {minister.lifeEvents.map((event) => (
-                    <li
-                      key={`${event.type}-${event.date}`}
-                      className="flex items-start justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0"
-                    >
-                      <span className="font-medium text-foreground">
-                        {event.type}
-                      </span>
-                      <span className="shrink-0 text-sm text-text-muted">
-                        {event.dateLabel}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          <aside className="space-y-8">
-            <div className="bg-white p-6 shadow-sm md:p-8">
-              <span className="section-accent" />
-              <h2 className="font-serif text-xl font-bold text-foreground">
-                Positions held
-              </h2>
-              <ul className="mt-5 space-y-4">
-                {minister.positions.map((position, index) => (
-                  <li
-                    key={`${position.title}-${position.startDate}-${index}`}
-                    className="border-l-2 border-primary pl-4"
-                  >
-                    <p className="font-bold text-foreground">{position.title}</p>
-                    <p className="mt-1 text-sm text-text-muted">
-                      {formatServiceDates(position.startDate, position.endDate)}
-                      {position.current ? " · Current" : ""}
+                  {position.notes && (
+                    <p className="mt-2 text-sm leading-relaxed text-text-muted">
+                      {position.notes}
                     </p>
-                    {position.notes && (
-                      <p className="mt-2 text-sm leading-relaxed text-text-muted">
-                        {position.notes}
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </aside>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {others.length > 0 && (

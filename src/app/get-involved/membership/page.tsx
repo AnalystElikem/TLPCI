@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { getPageBanner } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
 import ContactForm from "@/components/get-involved/ContactForm";
 import { Check } from "lucide-react";
 
@@ -24,41 +25,34 @@ const benefits = [
   "Fellowship and mutual support",
 ];
 
+const PAGE_ROUTE = "get-involved/membership";
+
 export const revalidate = 300;
 
 export default async function MembershipPage() {
-  const banner = await getPageBanner("Membership");
+  const [hero, banner] = await Promise.all([
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Membership", PAGE_ROUTE),
+  ]);
   return (
     <>
-      {/* Split hero */}
-      <section className="bg-white">
-        <div className="mx-auto grid max-w-[1200px] lg:grid-cols-2">
-          <div className="flex flex-col justify-center px-6 py-14 lg:px-14 lg:py-20">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-              More than attendance
-            </p>
-            <h1 className="mt-4 font-serif text-4xl font-bold leading-tight text-foreground md:text-6xl">
-              A place to belong
-            </h1>
-            <p className="mt-6 max-w-lg leading-relaxed text-text-muted">
-              Membership is a commitment to follow Christ in fellowship with
-              other believers — worshipping, growing, serving, and giving
-              together.
-            </p>
-            <a href="#pathway" className="btn btn-primary mt-8 w-fit">
-              How to Become a Member
-            </a>
-          </div>
-          <div className="relative min-h-[320px] lg:min-h-[500px]">
-            <Image
-              src={banner || "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=1200&q=80"}
-              alt="Church family"
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
-            />
-          </div>
+      <CmsPageBanner
+        cms={hero}
+        alt="Church family"
+        fallbackImage={
+          banner ||
+          "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=1200&q=80"
+        }
+        fallbackEyebrow="More than attendance"
+        fallbackTitle="A place to belong"
+        fallbackSubtitle="Membership is a commitment to follow Christ in fellowship with other believers — worshipping, growing, serving, and giving together."
+        showSubtitle
+      />
+      <section className="border-b border-border bg-white">
+        <div className="mx-auto max-w-[1200px] px-6 py-8 text-center lg:px-14">
+          <a href="#pathway" className="btn btn-primary">
+            How to Become a Member
+          </a>
         </div>
       </section>
 

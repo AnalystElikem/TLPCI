@@ -4,6 +4,10 @@ import Link from "next/link";
 import { Play, BookOpen, User, Clock } from "lucide-react";
 import SermonMediaActions from "@/components/sermons/SermonMediaActions";
 import { getSermons, sermonPath } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import { CmsCompactHeader } from "@/components/cms/CmsPageSections";
+
+const PAGE_ROUTE = "media/sermons";
 
 export const metadata: Metadata = {
   title: "Sermons",
@@ -14,25 +18,20 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function SermonsPage() {
-  const sermons = await getSermons();
+  const [sermons, hero] = await Promise.all([
+    getSermons(),
+    getWebPageSection(PAGE_ROUTE, "hero"),
+  ]);
   const [featured, ...rest] = sermons;
 
   return (
     <>
-      {/* Compact header */}
-      <section className="border-b border-border bg-white">
-        <div className="mx-auto max-w-[1200px] px-4 py-10 lg:px-8 lg:py-12">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-            Media
-          </p>
-          <h1 className="mt-2 text-3xl font-bold uppercase text-foreground md:text-5xl">
-            Sermons
-          </h1>
-          <p className="mt-3 max-w-xl text-text-muted">
-            Grow through the Word — watch or listen to recent messages anytime.
-          </p>
-        </div>
-      </section>
+      <CmsCompactHeader
+        cms={hero}
+        fallbackEyebrow="Media"
+        fallbackTitle="Sermons"
+        fallbackSubtitle="Grow through the Word — watch or listen to recent messages anytime."
+      />
 
       {/* Featured sermon — large horizontal layout */}
       <section className="bg-muted-surface py-14 lg:py-20">

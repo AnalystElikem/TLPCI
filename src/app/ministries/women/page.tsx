@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import OtherMinistries from "@/components/ministries/OtherMinistries";
 import MinistryLeaders from "@/components/ministries/MinistryLeaders";
@@ -11,6 +10,9 @@ import {
   getMinistryGallery,
   getMinistryLeaders,
 } from "@/lib/content-source";
+import { getWebPageSection, webText } from "@/lib/web-page-content";
+
+const PAGE_ROUTE = "ministries/women";
 
 export const metadata: Metadata = {
   title: "Women's Ministry",
@@ -40,10 +42,11 @@ const circles = [
 export const revalidate = 300;
 
 export default async function WomenMinistryPage() {
-  const [hero, gallery, liveLeaders] = await Promise.all([
+  const [heroImage, gallery, liveLeaders, heroCms] = await Promise.all([
     getMinistryHero("Women"),
     getMinistryGallery("Women"),
     getMinistryLeaders("Women"),
+    getWebPageSection(PAGE_ROUTE, "hero"),
   ]);
   return (
     <>
@@ -51,12 +54,10 @@ export default async function WomenMinistryPage() {
       <section className="bg-white">
         <div className="mx-auto max-w-[720px] px-4 py-16 text-center lg:px-8 lg:py-24">
           <p className="text-xs font-bold uppercase tracking-[0.35em] text-primary">
-            Women of virtue
+            {webText(heroCms, "eyebrow", "Women of virtue")}
           </p>
           <h1 className="mt-4 font-serif text-4xl font-bold leading-tight text-foreground md:text-6xl">
-            Flourishing
-            <br />
-            in Christ
+            {webText(heroCms, "title", "Flourishing in Christ")}
           </h1>
           <p className="mx-auto mt-6 max-w-lg leading-relaxed text-text-muted md:text-lg">
             Fellowship, teaching, and support for sisters at every stage —
@@ -75,7 +76,7 @@ export default async function WomenMinistryPage() {
       </section>
 
       <section className="relative h-[320px] w-full overflow-hidden md:h-[420px]">
-        <MinistryHeroMedia src={hero} alt="Women's fellowship" priority />
+        <MinistryHeroMedia src={heroImage} alt="Women's fellowship" priority />
       </section>
 
       {/* Two-column prose + circles list */}

@@ -1,10 +1,15 @@
 import Link from "next/link";
+import type { WebPageSectionValues } from "@/lib/web-page-content";
+import { webText } from "@/lib/web-page-content";
 
 export default function TestimoniesSection({
+  cms,
   background,
 }: {
+  cms?: WebPageSectionValues;
   background?: string | null;
 }) {
+  const title = webText(cms ?? {}, "title", "Amazing Testimonies");
   return (
     <section className="relative min-h-[300px] md:min-h-[360px]">
       <div
@@ -18,7 +23,7 @@ export default function TestimoniesSection({
       <div className="relative mx-auto flex max-w-[1400px] flex-col justify-center px-4 py-16 lg:px-8 lg:py-20">
         <span className="section-accent-white" />
         <h2 className="text-2xl font-bold uppercase tracking-wide text-white md:text-3xl">
-          Amazing Testimonies
+          {title}
         </h2>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link href="/media/testimonies" className="btn btn-primary">

@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTestimonies } from "@/lib/content-source";
+import { getWebPageSection, webText } from "@/lib/web-page-content";
 import TestimonyCard, {
   TestimonyShareBanner,
 } from "@/components/testimonies/TestimonyCard";
+
+const PAGE_ROUTE = "media/testimonies";
 
 export const metadata: Metadata = {
   title: "Testimonies",
@@ -14,21 +17,28 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function TestimoniesPage() {
-  const testimonies = await getTestimonies();
+  const [testimonies, hero] = await Promise.all([
+    getTestimonies(),
+    getWebPageSection(PAGE_ROUTE, "hero"),
+  ]);
 
   return (
     <>
       <section className="border-b border-border bg-white">
         <div className="mx-auto max-w-[820px] px-4 py-10 lg:px-8 lg:py-12">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-            Media
+            {webText(hero, "eyebrow", "Media")}
           </p>
           <span className="section-accent mt-4" />
           <h1 className="font-serif text-3xl font-bold uppercase text-foreground md:text-5xl">
-            Testimonies
+            {webText(hero, "title", "Testimonies")}
           </h1>
           <p className="mt-4 max-w-xl text-body leading-relaxed text-text-muted">
-            Read how God is moving in the lives of our church family.
+            {webText(
+              hero,
+              "subtitle",
+              "Read how God is moving in the lives of our church family."
+            )}
           </p>
         </div>
       </section>

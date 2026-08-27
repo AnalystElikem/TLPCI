@@ -2,34 +2,41 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { blogPostPath, getBlogPosts } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import { CmsCompactHeader } from "@/components/cms/CmsPageSections";
+
+const PAGE_ROUTE = "news-events/blog";
 
 export const metadata: Metadata = {
-  title: "Blog",
+  title: "Latest News",
   description:
-    "Articles and stories from The Lord's Pentecostal Church International.",
+    "News and stories from The Lord's Pentecostal Church International.",
 };
 
 export const revalidate = 300;
 
 export default async function BlogPage() {
-  const posts = await getBlogPosts();
+  const [posts, hero] = await Promise.all([
+    getBlogPosts(),
+    getWebPageSection(PAGE_ROUTE, "hero"),
+  ]);
   const featured =
     posts.find((post) => post.featured) ?? posts[0];
   const rest = posts.filter((post) => String(post.id) !== String(featured?.id));
 
+  const pageHeader = (
+    <CmsCompactHeader
+      cms={hero}
+      fallbackEyebrow="News & Events"
+      fallbackTitle="Latest News"
+      fallbackSubtitle="News, updates, and stories from across the church."
+    />
+  );
+
   if (!featured) {
     return (
       <>
-        <section className="border-b border-border bg-white">
-          <div className="mx-auto max-w-[1200px] px-4 py-10 lg:px-8 lg:py-12">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-              News &amp; Events
-            </p>
-            <h1 className="mt-2 text-3xl font-bold uppercase text-foreground md:text-5xl">
-              Blog
-            </h1>
-          </div>
-        </section>
+        {pageHeader}
         <section className="bg-muted-surface py-16 lg:py-24">
           <div className="mx-auto max-w-[1200px] px-4 text-center lg:px-8">
             <p className="text-text-muted">Coming soon.</p>
@@ -41,24 +48,12 @@ export default async function BlogPage() {
 
   return (
     <>
-      <section className="border-b border-border bg-white">
-        <div className="mx-auto max-w-[1200px] px-4 py-10 lg:px-8 lg:py-12">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-            News &amp; Events
-          </p>
-          <h1 className="mt-2 text-3xl font-bold uppercase text-foreground md:text-5xl">
-            Blog
-          </h1>
-          <p className="mt-3 max-w-xl text-text-muted">
-            Articles, updates, and stories from across the church.
-          </p>
-        </div>
-      </section>
+      {pageHeader}
 
       <section className="bg-muted-surface py-14 lg:py-20">
         <div className="mx-auto max-w-[1200px] px-4 lg:px-8">
           <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
-            {featured.featured ? "Featured post" : "Latest post"}
+            {featured.featured ? "Featured story" : "Latest news"}
           </p>
           <article className="mt-4 grid overflow-hidden bg-white shadow-sm lg:grid-cols-[1.3fr_1fr]">
             <div className="relative min-h-[260px] lg:min-h-[380px]">
@@ -90,7 +85,7 @@ export default async function BlogPage() {
                 href={blogPostPath(featured.id)}
                 className="mt-6 inline-block text-xs font-bold uppercase tracking-wide text-primary hover:underline"
               >
-                Read post →
+                Read story →
               </Link>
             </div>
           </article>
@@ -101,7 +96,7 @@ export default async function BlogPage() {
         <section className="bg-white py-16 lg:py-24">
           <div className="mx-auto max-w-[1200px] px-4 lg:px-8">
             <h2 className="text-xl font-bold uppercase text-foreground md:text-2xl">
-              More posts
+              More news
             </h2>
             <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {rest.map((item) => (

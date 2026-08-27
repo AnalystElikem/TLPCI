@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getPageBanner } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import { CmsPageIntro } from "@/components/cms/CmsPageSections";
 import Link from "next/link";
 import { CHURCH_NAME } from "@/lib/constants";
+
+const PAGE_ROUTE = "about/our-story";
 
 export const metadata: Metadata = {
   title: "Our Story",
@@ -59,27 +63,18 @@ const quickLinks = [
 export const revalidate = 300;
 
 export default async function OurStoryPage() {
-  const banner = await getPageBanner("Our Story");
+  const [hero, banner] = await Promise.all([
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Our Story", PAGE_ROUTE),
+  ]);
   return (
     <>
-      {/* Big intro */}
-      <section className="bg-white">
-        <div className="mx-auto max-w-[1100px] px-4 py-16 text-center lg:px-8 lg:py-24">
-          <p className="text-sm font-bold uppercase tracking-[0.35em] text-primary">
-            Our Story
-          </p>
-          <h1 className="mt-4 font-serif text-3xl font-bold leading-[1.1] text-foreground sm:text-4xl md:text-6xl">
-            One Gospel. One Saviour.
-            <br className="hidden md:block" /> Jesus Christ.
-          </h1>
-          <p className="mx-auto mt-8 max-w-2xl text-base leading-relaxed text-text-muted md:text-lg">
-            For over sixty years, one message has carried {CHURCH_NAME} from a
-            sitting room in Peki to the nations — Jesus Christ, the hope of the
-            world. This is the story of what He has done, and is still doing,
-            through an ordinary people who trusted Him.
-          </p>
-        </div>
-      </section>
+      <CmsPageIntro
+        cms={hero}
+        fallbackEyebrow="Our Story"
+        fallbackTitle={"One Gospel. One Saviour.\nJesus Christ."}
+        fallbackSubtitle={`For over sixty years, one message has carried ${CHURCH_NAME} from a sitting room in Peki to the nations — Jesus Christ, the hope of the world. This is the story of what He has done, and is still doing, through an ordinary people who trusted Him.`}
+      />
 
       {/* Origin narrative */}
       <section className="border-t border-border bg-muted-surface">

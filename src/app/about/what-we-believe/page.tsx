@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getPageBanner } from "@/lib/content-source";
+import { getWebPageSection, webText } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { basisOfFaith } from "@/data/content";
+
+const PAGE_ROUTE = "about/what-we-believe";
 
 export const metadata: Metadata = {
   title: "What We Believe",
@@ -14,26 +18,15 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function WhatWeBelievePage() {
-  const banner = await getPageBanner("What We Believe");
+  const hero = await getWebPageSection(PAGE_ROUTE, "hero");
   return (
     <>
-      {/* Banner */}
-      <section className="relative h-[200px] w-full overflow-hidden md:h-[280px]">
-        <Image
-          src={banner || "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1600&q=80"}
-          alt="What We Believe"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="absolute inset-0 flex items-center justify-center px-4">
-          <h1 className="text-center text-3xl font-bold uppercase tracking-wide text-white md:text-5xl">
-            What We Believe
-          </h1>
-        </div>
-      </section>
+      <CmsPageBanner
+        cms={hero}
+        alt="What We Believe"
+        fallbackImage="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1600&q=80"
+        fallbackTitle="What We Believe"
+      />
 
       {/* Mission statement — the big statement */}
       <section className="bg-secondary">

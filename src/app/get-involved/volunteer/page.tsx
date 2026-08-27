@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { getPageBanner } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
 import { Users, Monitor, Music, Baby, HandHeart, Megaphone } from "lucide-react";
 import VolunteerForm from "@/components/get-involved/VolunteerForm";
 
@@ -43,32 +44,34 @@ const teams = [
   },
 ];
 
+const PAGE_ROUTE = "get-involved/volunteer";
+
 export const revalidate = 300;
 
 export default async function VolunteerPage() {
-  const banner = await getPageBanner("Volunteer");
+  const [hero, banner] = await Promise.all([
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Volunteer", PAGE_ROUTE),
+  ]);
   return (
     <>
-      {/* Hero */}
-      <section className="relative h-[280px] overflow-hidden md:h-[360px]">
-        <Image
-          src={banner || "https://images.unsplash.com/photo-1544776193-352d25ca82cd?w=1600&q=80"}
-          alt="Volunteers serving together"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/50 to-black/40" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center text-white">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/75">
-            Make a difference
-          </p>
-          <h1 className="mt-3 text-4xl font-bold uppercase md:text-6xl">Volunteer</h1>
-          <p className="mt-4 max-w-lg text-white/80">
-            Use your gifts to serve God, His church, and the community.
-          </p>
-          <a href="#volunteer-form" className="btn btn-primary mt-6">
+      <CmsPageBanner
+        cms={hero}
+        alt="Volunteers serving together"
+        fallbackImage={
+          banner ||
+          "https://images.unsplash.com/photo-1544776193-352d25ca82cd?w=1600&q=80"
+        }
+        fallbackEyebrow="Make a difference"
+        fallbackTitle="Volunteer"
+        fallbackSubtitle="Use your gifts to serve God, His church, and the community."
+        heightClass="h-[280px] md:h-[360px]"
+        overlayClass="bg-gradient-to-t from-black/75 via-black/50 to-black/40"
+        showSubtitle
+      />
+      <section className="border-b border-border bg-white">
+        <div className="mx-auto max-w-[1100px] px-4 py-5 text-center lg:px-8">
+          <a href="#volunteer-form" className="btn btn-primary">
             Join a Team
           </a>
         </div>

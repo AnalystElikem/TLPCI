@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getMinisters, getPageBanner } from "@/lib/content-source";
+import { getWebPageSection, webText } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
 import Link from "next/link";
 import MinistersDirectory from "@/components/churches/MinistersDirectory";
+
+const PAGE_ROUTE = "churches/pastors";
 
 export const metadata: Metadata = {
   title: "Our Ministers",
@@ -13,45 +17,32 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function PastorsPage() {
-  const [banner, ministerGroups] = await Promise.all([
-    getPageBanner("Our Ministers"),
+  const [hero, banner, ministerGroups] = await Promise.all([
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Our Ministers", PAGE_ROUTE),
     getMinisters(),
   ]);
   return (
     <>
-      <section className="relative h-[200px] w-full overflow-hidden md:h-[280px]">
-        <Image
-          src={banner || "https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=1600&q=80"}
-          alt="Our Ministers"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/45 to-black/35" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">
-            Servants of the Church
-          </p>
-          <h1 className="mt-3 text-3xl font-bold uppercase tracking-wide text-white md:text-5xl">
-            Our Ministers
-          </h1>
-        </div>
-      </section>
+      <CmsPageBanner
+        cms={hero}
+        alt="Our Ministers"
+        fallbackImage={
+          banner ||
+          "https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=1600&q=80"
+        }
+        fallbackEyebrow="Servants of the Church"
+        fallbackTitle="Our Ministers"
+      />
 
       <section className="border-b border-border bg-white">
         <div className="mx-auto max-w-[900px] px-4 py-8 text-center lg:px-8">
           <p className="leading-relaxed text-text-muted md:text-lg">
-            The apostles, prophets, pastors, reverends, and elders who shepherd
-            our congregations across Ghana and beyond. For our national
-            leadership, see{" "}
-            <Link
-              href="/about/leadership"
-              className="font-medium text-primary hover:underline"
-            >
-              Leadership
-            </Link>
-            .
+            {webText(
+              hero,
+              "subtitle",
+              "The apostles, prophets, pastors, reverends, and elders who shepherd our congregations across Ghana and beyond. For our national leadership, see Leadership."
+            )}
           </p>
         </div>
       </section>

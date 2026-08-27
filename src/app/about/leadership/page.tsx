@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { User } from "lucide-react";
-import { getLeadership } from "@/lib/content-source";
+import { getLeadership, getPageBanner } from "@/lib/content-source";
+import { getWebPageSection, webText } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
+
+const PAGE_ROUTE = "about/leadership";
 
 export const metadata: Metadata = {
   title: "Leadership",
@@ -33,41 +37,39 @@ function PersonPhoto({ src, alt }: { src: string; alt: string }) {
 }
 
 export default async function LeadershipPage() {
+  const [hero, banner, leadership] = await Promise.all([
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Leadership", PAGE_ROUTE),
+    getLeadership(),
+  ]);
   const {
     generalOverseer: go,
     council: executiveCouncil,
     pastOverseers,
-  } = await getLeadership();
+  } = leadership;
 
   return (
     <>
-      {/* Banner */}
-      <section className="relative h-[220px] w-full overflow-hidden md:h-[300px]">
-        <Image
-          src="https://images.unsplash.com/photo-1524230572899-a752b3835840?w=1600&q=80"
-          alt="Leadership"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/45 to-black/35" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">
-            Meet Our Leaders
-          </p>
-          <h1 className="mt-3 text-3xl font-bold uppercase tracking-wide text-white md:text-5xl">
-            Leadership
-          </h1>
-        </div>
-      </section>
+      <CmsPageBanner
+        cms={hero}
+        alt="Leadership"
+        fallbackImage={
+          banner ||
+          "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=1600&q=80"
+        }
+        fallbackEyebrow="Meet Our Leaders"
+        fallbackTitle="Leadership"
+      />
 
       {/* Intro + jump links */}
       <section className="border-b border-border bg-white">
         <div className="mx-auto max-w-[900px] px-4 py-10 text-center lg:px-8 lg:py-12">
           <p className="leading-relaxed text-text-muted md:text-lg">
-            Servant leaders who oversee the work of the church — guiding
-            doctrine, mission, and pastoral care across our congregations.
+            {webText(
+              hero,
+              "subtitle",
+              "Servant leaders who oversee the work of the church — guiding doctrine, mission, and pastoral care across our congregations."
+            )}
           </p>
           <nav
             aria-label="Leadership sections"

@@ -118,7 +118,7 @@ export default async function MinistryRelatedContent({
           <div className={events.length > 0 ? "mt-14" : ""}>
             <span className="section-accent" />
             <h2 className="font-serif text-2xl font-bold text-foreground md:text-3xl">
-              From the blog
+              Latest news
             </h2>
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {posts.map((post) => (

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import OtherMinistries from "@/components/ministries/OtherMinistries";
 import MinistryLeaders from "@/components/ministries/MinistryLeaders";
@@ -10,7 +9,10 @@ import {
   getMinistryGallery,
   getMinistryLeaders,
 } from "@/lib/content-source";
+import { getWebPageSection, webText } from "@/lib/web-page-content";
 import MinistryRelatedContent from "@/components/ministries/MinistryRelatedContent";
+
+const PAGE_ROUTE = "ministries/youth";
 
 export const metadata: Metadata = {
   title: "Youth Ministry",
@@ -28,17 +30,18 @@ const rhythm = [
 export const revalidate = 300;
 
 export default async function YouthMinistryPage() {
-  const [hero, gallery, liveLeaders] = await Promise.all([
+  const [heroImage, gallery, liveLeaders, heroCms] = await Promise.all([
     getMinistryHero("Youth"),
     getMinistryGallery("Youth"),
     getMinistryLeaders("Youth"),
+    getWebPageSection(PAGE_ROUTE, "hero"),
   ]);
   return (
     <>
       {/* Full dark banner with big type */}
       <section className="relative min-h-[70vh] overflow-hidden bg-[#111]">
         <MinistryHeroMedia
-          src={hero}
+          src={heroImage}
           alt="Youth ministry"
           className="object-cover opacity-50"
           priority
@@ -46,9 +49,7 @@ export default async function YouthMinistryPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
         <div className="relative mx-auto flex min-h-[70vh] max-w-[1200px] flex-col justify-end px-4 pb-14 pt-28 lg:px-8 lg:pb-20">
           <h1 className="max-w-2xl text-4xl font-bold uppercase leading-[0.95] text-white sm:text-5xl md:text-7xl">
-            Youth
-            <br />
-            on fire
+            {webText(heroCms, "title", "Youth on fire")}
           </h1>
           <p className="mt-5 max-w-md text-base text-white/80">
             Raising young people who stand firm in faith, live holy lives, and

@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { getPageBanner } from "@/lib/content-source";
+import { getWebPageSection, webText } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
 import Link from "next/link";
 import BranchDirectory from "@/components/churches/BranchDirectory";
+
+const PAGE_ROUTE = "churches/find";
 
 export const metadata: Metadata = {
   title: "Find a Church",
@@ -13,36 +16,31 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function ChurchLocatorPage() {
-  const banner = await getPageBanner("Find a Church");
+  const [hero, banner] = await Promise.all([
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Find a Church", PAGE_ROUTE),
+  ]);
   return (
     <>
-      <section className="relative h-[200px] w-full overflow-hidden md:h-[280px]">
-        <Image
-          src={banner || "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1600&q=80"}
-          alt="Find a Church"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/45 to-black/35" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">
-            Church Locator
-          </p>
-          <h1 className="mt-3 text-3xl font-bold uppercase tracking-wide text-white md:text-5xl">
-            Find a Church
-          </h1>
-        </div>
-      </section>
+      <CmsPageBanner
+        cms={hero}
+        alt="Find a Church"
+        fallbackImage={
+          banner ||
+          "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1600&q=80"
+        }
+        fallbackEyebrow="Church Locator"
+        fallbackTitle="Find a Church"
+      />
 
       <section className="border-b border-border bg-white">
         <div className="mx-auto max-w-[900px] px-4 py-8 text-center lg:px-8">
           <p className="leading-relaxed text-text-muted md:text-lg">
-            The Lord&apos;s Pentecostal Church International is present in
-            communities across Ghana and beyond. Search for your town below —
-            if we&apos;re near you, get in touch and we&apos;ll connect you to
-            the branch closest to you.
+            {webText(
+              hero,
+              "subtitle",
+              "The Lord's Pentecostal Church International is present in communities across Ghana and beyond. Search for your town below — if we're near you, get in touch and we'll connect you to the branch closest to you."
+            )}
           </p>
           <nav
             aria-label="Churches pages"

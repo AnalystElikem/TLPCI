@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { getPageBanner } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
 import Link from "next/link";
 import {
   MapPin,
@@ -55,32 +56,28 @@ const socials = [
   { icon: Youtube, label: "YouTube", href: "#" },
 ];
 
+const PAGE_ROUTE = "contact";
+
 export const revalidate = 300;
 
 export default async function ContactPage() {
-  const banner = await getPageBanner("Contact");
+  const [hero, banner] = await Promise.all([
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Contact", PAGE_ROUTE),
+  ]);
   return (
     <>
-      {/* Banner */}
-      <section className="relative h-[220px] w-full overflow-hidden md:h-[300px]">
-        <Image
-          src={banner || "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=1600&q=80"}
-          alt="Contact us"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/45 to-black/35" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">
-            Get in touch
-          </p>
-          <h1 className="mt-3 text-3xl font-bold uppercase tracking-wide text-white md:text-5xl">
-            Contact
-          </h1>
-        </div>
-      </section>
+      <CmsPageBanner
+        cms={hero}
+        alt="Contact us"
+        fallbackImage={
+          banner ||
+          "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=1600&q=80"
+        }
+        fallbackEyebrow="Get in touch"
+        fallbackTitle="Contact"
+        heightClass="h-[220px] md:h-[300px]"
+      />
 
       {/* Detail cards */}
       <section className="bg-white py-16 lg:py-24">

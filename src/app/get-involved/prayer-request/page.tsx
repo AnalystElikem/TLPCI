@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { getPageBanner } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
 import { getPrayerRequestTypes } from "@/lib/prayer-request-submit";
-import { Lock, Heart, Users } from "lucide-react";
+import { Lock, Users } from "lucide-react";
 import PrayerRequestForm from "@/components/get-involved/PrayerRequestForm";
 
 export const metadata: Metadata = {
@@ -11,34 +12,31 @@ export const metadata: Metadata = {
     "Submit a prayer request to The Lord's Pentecostal Church International — our team will stand with you in prayer.",
 };
 
+const PAGE_ROUTE = "get-involved/prayer-request";
+
 export const revalidate = 300;
 
 export default async function PrayerRequestPage() {
-  const [banner, prayerTypes] = await Promise.all([
-    getPageBanner("Prayer Request"),
+  const [hero, banner, prayerTypes] = await Promise.all([
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Prayer Request", PAGE_ROUTE),
     getPrayerRequestTypes(),
   ]);
   return (
     <>
-      <section className="relative min-h-[360px] overflow-hidden">
-        <Image
-          src={banner || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&q=80"}
-          alt="Prayer"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/65" />
-        <div className="relative mx-auto flex min-h-[360px] max-w-[900px] flex-col items-center justify-center px-4 py-14 text-center text-white">
-          <Heart className="h-8 w-8 text-primary" />
-          <h1 className="mt-4 font-serif text-4xl font-bold md:text-6xl">We will pray with you</h1>
-          <p className="mt-5 max-w-xl leading-relaxed text-white/80">
-            Whatever you are carrying, you do not have to carry it alone.
-            Share your request with our prayer team.
-          </p>
-        </div>
-      </section>
+      <CmsPageBanner
+        cms={hero}
+        alt="Prayer"
+        fallbackImage={
+          banner ||
+          "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&q=80"
+        }
+        fallbackTitle="We will pray with you"
+        fallbackSubtitle="Whatever you are carrying, you do not have to carry it alone. Share your request with our prayer team."
+        heightClass="min-h-[360px]"
+        overlayClass="bg-black/65"
+        showSubtitle
+      />
 
       <section className="bg-muted-surface py-16 lg:py-24">
         <div className="mx-auto grid max-w-[1100px] gap-8 px-4 lg:grid-cols-[0.75fr_1.25fr] lg:px-8">

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import OtherMinistries from "@/components/ministries/OtherMinistries";
 import MinistryLeaders from "@/components/ministries/MinistryLeaders";
@@ -10,7 +9,10 @@ import {
   getMinistryGallery,
   getMinistryLeaders,
 } from "@/lib/content-source";
+import { getWebPageSection, webText } from "@/lib/web-page-content";
 import MinistryRelatedContent from "@/components/ministries/MinistryRelatedContent";
+
+const PAGE_ROUTE = "ministries/children";
 
 export const metadata: Metadata = {
   title: "Children Ministry",
@@ -30,10 +32,11 @@ const classes = [
 export const revalidate = 300;
 
 export default async function ChildrenMinistryPage() {
-  const [hero, gallery, liveLeaders] = await Promise.all([
+  const [heroImage, gallery, liveLeaders, heroCms] = await Promise.all([
     getMinistryHero("Children"),
     getMinistryGallery("Children"),
     getMinistryLeaders("Children"),
+    getWebPageSection(PAGE_ROUTE, "hero"),
   ]);
   return (
     <>
@@ -42,7 +45,7 @@ export default async function ChildrenMinistryPage() {
         <div className="mx-auto grid max-w-[1200px] lg:grid-cols-2">
           <div className="relative min-h-[280px] lg:min-h-[480px]">
             <MinistryHeroMedia
-              src={hero}
+              src={heroImage}
               alt="Children's ministry"
               sizes="(max-width: 1024px) 100vw, 50vw"
               priority
@@ -50,10 +53,10 @@ export default async function ChildrenMinistryPage() {
           </div>
           <div className="flex flex-col justify-center px-6 py-12 lg:px-14 lg:py-16">
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-              Next Generation
+              {webText(heroCms, "eyebrow", "Next Generation")}
             </p>
             <h1 className="mt-3 font-serif text-4xl font-bold leading-tight text-foreground md:text-5xl">
-              Children&apos;s Ministry
+              {webText(heroCms, "title", "Children's Ministry")}
             </h1>
             <p className="mt-5 max-w-md leading-relaxed text-text-muted">
               A safe, joyful place where kids encounter Jesus through Bible

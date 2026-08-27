@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { HeartHandshake, DoorOpen, Coffee, HandHelping } from "lucide-react";
 import OtherMinistries from "@/components/ministries/OtherMinistries";
@@ -12,6 +11,10 @@ import {
   getMinistryGallery,
   getMinistryLeaders,
 } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import { CmsMinistryHeroText } from "@/components/cms/CmsPageSections";
+
+const PAGE_ROUTE = "ministries/deacons";
 
 export const metadata: Metadata = {
   title: "Deacons & Deaconesses",
@@ -45,24 +48,24 @@ const duties = [
 export const revalidate = 300;
 
 export default async function DeaconsMinistryPage() {
-  const [hero, gallery, liveLeaders] = await Promise.all([
+  const [heroImage, gallery, liveLeaders, heroCms] = await Promise.all([
     getMinistryHero("Deacons & Deaconesses"),
     getMinistryGallery("Deacons & Deaconesses"),
     getMinistryLeaders("Deacons & Deaconesses"),
+    getWebPageSection(PAGE_ROUTE, "hero"),
   ]);
   return (
     <>
       <section className="relative h-[240px] overflow-hidden md:h-[320px]">
-        <MinistryHeroMedia src={hero} alt="Deacons and deaconesses" priority />
+        <MinistryHeroMedia src={heroImage} alt="Deacons and deaconesses" priority />
         <div className="absolute inset-0 bg-black/60" />
         <div className="absolute inset-0 flex items-end px-4 pb-10 lg:px-16">
           <div className="mx-auto w-full max-w-[1100px]">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/70">
-              The Ministry of Helps
-            </p>
-            <h1 className="mt-2 text-3xl font-bold uppercase text-white sm:text-4xl md:text-5xl">
-              Deacons &amp; Deaconesses
-            </h1>
+            <CmsMinistryHeroText
+              cms={heroCms}
+              fallbackEyebrow="The Ministry of Helps"
+              fallbackTitle="Deacons & Deaconesses"
+            />
           </div>
         </div>
       </section>

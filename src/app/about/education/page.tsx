@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getPageBanner } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
 import Link from "next/link";
 import { GraduationCap, BookOpen, HeartHandshake, MapPin } from "lucide-react";
 
@@ -14,32 +16,29 @@ const academyLocations = ["Kwashieman", "Ashaiman"];
 
 const programmes = ["Certificate", "Diploma", "Degree", "Masters"];
 
+const PAGE_ROUTE = "about/education";
+
 export const revalidate = 300;
 
 export default async function EducationPage() {
-  const banner = await getPageBanner("Education");
+  const [hero, banner] = await Promise.all([
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Education", PAGE_ROUTE),
+  ]);
   return (
     <>
-      {/* Hero */}
-      <section className="relative h-[240px] overflow-hidden md:h-[340px]">
-        <Image
-          src={banner || "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=1600&q=80"}
-          alt="Education"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/35" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/80">
-            Reaching Minds &amp; Hearts
-          </p>
-          <h1 className="mt-3 text-3xl font-bold uppercase tracking-wide text-white md:text-5xl">
-            Education &amp; Training
-          </h1>
-        </div>
-      </section>
+      <CmsPageBanner
+        cms={hero}
+        alt="Education"
+        fallbackImage={
+          banner ||
+          "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=1600&q=80"
+        }
+        fallbackEyebrow="Reaching Minds & Hearts"
+        fallbackTitle="Education & Training"
+        heightClass="h-[240px] md:h-[340px]"
+        overlayClass="bg-gradient-to-t from-black/80 via-black/50 to-black/35"
+      />
 
       {/* Intro */}
       <section className="bg-white py-14 lg:py-20">

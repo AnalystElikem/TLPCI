@@ -10,37 +10,47 @@ import BottomColumns from "@/components/home/BottomColumns";
 import LocationSection from "@/components/home/LocationSection";
 import {
   getEvents,
+  getHomeAdvertisementBanners,
   getBlogPosts,
   getSermons,
-  getHeroSlides,
+  getHomeHeroSlides,
   getHomeSettings,
   getLeadership,
 } from "@/lib/content-source";
+import { HOME_PAGE_ROUTE } from "@/lib/page-routes";
+import { getWebPageSection } from "@/lib/web-page-content";
 
 // Regenerate periodically so the verse & devotion of the day advance
 // automatically and ERPNext content stays fresh — no rebuild or manual posting.
 export const revalidate = 300;
 
 export default async function Home() {
-  const [slides, sermons, events, news, home, leadership] = await Promise.all([
-    getHeroSlides(),
-    getSermons(),
-    getEvents(),
-    getBlogPosts(),
-    getHomeSettings(),
-    getLeadership(),
-  ]);
+  const [slides, sermons, events, adBanners, news, home, leadership, welcome, testimonies] =
+    await Promise.all([
+      getHomeHeroSlides(),
+      getSermons(),
+      getEvents(),
+      getHomeAdvertisementBanners(),
+      getBlogPosts(),
+      getHomeSettings(),
+      getLeadership(),
+      getWebPageSection(HOME_PAGE_ROUTE, "welcome"),
+      getWebPageSection(HOME_PAGE_ROUTE, "testimonies"),
+    ]);
 
   return (
     <>
       <HeroSection slides={slides ?? undefined} />
       <DontGiveUpBanner />
-      <PastorsWelcome goImage={leadership.generalOverseer.image} />
-      <LordsHourBanner image={home.advertisementBanner} />
+      <PastorsWelcome cms={welcome} goImage={leadership.generalOverseer.image} />
+      <LordsHourBanner
+        advertisements={adBanners}
+        image={home.advertisementBanner}
+      />
       <SermonsSection sermons={sermons} />
       <EventsBar events={events} />
       <DailyDevotion />
-      <TestimoniesSection background={home.testimoniesBackground} />
+      <TestimoniesSection cms={testimonies} background={home.testimoniesBackground} />
       <BottomColumns news={news} />
       <LocationSection />
     </>

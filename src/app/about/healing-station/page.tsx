@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { getPageBanner } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
 import Link from "next/link";
-import { Clock, Sparkles, BedDouble, Stethoscope, MapPin } from "lucide-react";
+import { Clock, Sparkles, BedDouble, Stethoscope } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Healing Station",
@@ -28,38 +29,29 @@ const facilities = [
   },
 ];
 
+const PAGE_ROUTE = "about/healing-station";
+
 export const revalidate = 300;
 
 export default async function HealingStationPage() {
-  const banner = await getPageBanner("Healing Station");
+  const [hero, banner] = await Promise.all([
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Healing Station", PAGE_ROUTE),
+  ]);
   return (
     <>
-      {/* Hero */}
-      <section className="relative min-h-[380px] overflow-hidden md:min-h-[460px]">
-        <Image
-          src={banner || "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&q=80"}
-          alt="The Tokokoe Healing Station"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/55 to-black/40" />
-        <div className="absolute inset-0 flex flex-col justify-end px-4 pb-12 lg:px-16">
-          <div className="mx-auto w-full max-w-[1100px]">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/75">
-              A Place of Encounter
-            </p>
-            <h1 className="mt-3 max-w-2xl text-3xl font-bold uppercase leading-tight text-white sm:text-4xl md:text-6xl">
-              The Tokokoe Healing Station
-            </h1>
-            <p className="mt-4 flex items-center gap-2 text-sm text-white/85">
-              <MapPin className="h-4 w-4 text-primary" />
-              Tokokoe, near Ho — Volta Region, Ghana
-            </p>
-          </div>
-        </div>
-      </section>
+      <CmsPageBanner
+        cms={hero}
+        alt="The Tokokoe Healing Station"
+        fallbackImage={
+          banner ||
+          "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&q=80"
+        }
+        fallbackEyebrow="A Place of Encounter"
+        fallbackTitle="The Tokokoe Healing Station"
+        heightClass="min-h-[380px] md:min-h-[460px]"
+        overlayClass="bg-gradient-to-t from-black/85 via-black/55 to-black/40"
+      />
 
       {/* Intro */}
       <section className="bg-white py-14 lg:py-20">

@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import GalleryAlbumGrid from "@/components/media/GalleryAlbumGrid";
 import { getGalleryAlbums } from "@/lib/content-source";
+import { getWebPageSection, webText } from "@/lib/web-page-content";
+
+const PAGE_ROUTE = "media/gallery";
 
 export const metadata: Metadata = {
   title: "Gallery",
@@ -12,19 +15,26 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function GalleryPage() {
-  const albums = await getGalleryAlbums();
+  const [albums, hero] = await Promise.all([
+    getGalleryAlbums(),
+    getWebPageSection(PAGE_ROUTE, "hero"),
+  ]);
   return (
     <>
       <section className="bg-white">
         <div className="mx-auto max-w-[720px] px-4 py-14 text-center lg:px-8 lg:py-20">
           <p className="text-xs font-bold uppercase tracking-[0.35em] text-primary">
-            Moments
+            {webText(hero, "eyebrow", "Moments")}
           </p>
           <h1 className="mt-4 font-serif text-4xl font-bold text-foreground md:text-6xl">
-            Gallery
+            {webText(hero, "title", "Gallery")}
           </h1>
           <p className="mx-auto mt-5 max-w-md leading-relaxed text-text-muted">
-            Choose a category, then open an album to browse the photos.
+            {webText(
+              hero,
+              "subtitle",
+              "Choose a category, then open an album to browse the photos."
+            )}
           </p>
         </div>
       </section>

@@ -6,6 +6,7 @@
     "dev": "next dev",
     "sync:ministers": "node scripts/sync-ministers.mjs",
     "import:ministers": "node --env-file=.env.local scripts/import-ministers-to-erpnext.mjs",
+    "setup:web-pages": "node --env-file=.env.local scripts/setup-web-pages.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

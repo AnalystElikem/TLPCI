@@ -5,29 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CHURCH_NAME } from "@/lib/constants";
+import { HOME_HERO_FALLBACKS } from "@/data/home-hero-fallbacks";
 
-type Slide = { title: string; text: string; image: string };
+type Slide = {
+  title: string;
+  text: string;
+  image: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+};
 
-const DEFAULT_SLIDES: Slide[] = [
-  {
-    title: "Welcome to TLPCI",
-    text: "You are not here by chance — come and be part of a family where faith grows and lives are transformed.",
-    image:
-      "https://plus.unsplash.com/premium_photo-1661491926923-6c5c75e00ce7?w=1800&auto=format&fit=crop&q=80",
-  },
-  {
-    title: "2026 Theme",
-    text: "Empowered to Transform (Acts 1:8)",
-    image:
-      "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1800&q=80",
-  },
-  {
-    title: "God Is In This Place",
-    text: "There is a place for you here. Come, worship with us, and encounter the life-changing power of God.",
-    image:
-      "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1800&q=80",
-  },
-];
+const DEFAULT_SLIDES: Slide[] = HOME_HERO_FALLBACKS.map((slide) => ({ ...slide }));
 
 const SLIDE_INTERVAL = 6000;
 
@@ -47,7 +35,7 @@ export default function HeroSection({ slides: slidesProp }: { slides?: Slide[] }
       SLIDE_INTERVAL
     );
     return () => clearInterval(timer);
-  }, [active]);
+  }, [slides.length]);
 
   return (
     <section className="relative h-[420px] w-full overflow-hidden md:h-[540px] lg:h-[620px]">
@@ -55,7 +43,7 @@ export default function HeroSection({ slides: slidesProp }: { slides?: Slide[] }
 
       {slides.map((slide, i) => (
         <div
-          key={slide.title}
+          key={`${slide.title}-${i}`}
           aria-hidden={i !== active}
           className={`absolute inset-0 transition-opacity duration-700 ${
             i === active ? "opacity-100" : "pointer-events-none opacity-0"
@@ -78,15 +66,17 @@ export default function HeroSection({ slides: slidesProp }: { slides?: Slide[] }
                 <h2 className="whitespace-nowrap text-2xl text-white sm:text-h2 md:text-h1 lg:text-display">
                   {slide.title}
                 </h2>
-                <p className="mt-3 max-w-xl text-sm text-white/90 md:text-base">
-                  {slide.text}
-                </p>
+                {slide.text ? (
+                  <p className="mt-3 max-w-xl text-sm text-white/90 md:text-base">
+                    {slide.text}
+                  </p>
+                ) : null}
                 <Link
-                  href="/about/our-story"
+                  href={slide.ctaHref || "/about/our-story"}
                   className="btn btn-primary mt-6"
                   tabIndex={i === active ? 0 : -1}
                 >
-                  Find Out More
+                  {slide.ctaLabel || "Find Out More"}
                 </Link>
               </div>
             </div>
@@ -118,7 +108,7 @@ export default function HeroSection({ slides: slidesProp }: { slides?: Slide[] }
       <div className="absolute bottom-5 right-4 flex gap-2 lg:right-8">
         {slides.map((slide, i) => (
           <button
-            key={slide.title}
+            key={`${slide.title}-dot-${i}`}
             type="button"
             aria-label={`Go to slide ${i + 1}: ${slide.title}`}
             onClick={() => setActive(i)}

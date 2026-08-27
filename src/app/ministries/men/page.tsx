@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import OtherMinistries from "@/components/ministries/OtherMinistries";
 import MinistryLeaders from "@/components/ministries/MinistryLeaders";
@@ -11,6 +10,10 @@ import {
   getMinistryGallery,
   getMinistryLeaders,
 } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import { CmsMinistryHeroText } from "@/components/cms/CmsPageSections";
+
+const PAGE_ROUTE = "ministries/men";
 
 export const metadata: Metadata = {
   title: "Men's Ministry",
@@ -48,24 +51,24 @@ const callResponse = [
 ];
 
 export default async function MenMinistryPage() {
-  const [hero, gallery, liveLeaders] = await Promise.all([
+  const [heroImage, gallery, liveLeaders, heroCms] = await Promise.all([
     getMinistryHero("Men"),
     getMinistryGallery("Men"),
     getMinistryLeaders("Men"),
+    getWebPageSection(PAGE_ROUTE, "hero"),
   ]);
   return (
     <>
       <section className="relative h-[240px] overflow-hidden md:h-[320px]">
-        <MinistryHeroMedia src={hero} alt="Men's ministry" priority />
+        <MinistryHeroMedia src={heroImage} alt="Men's ministry" priority />
         <div className="absolute inset-0 bg-black/60" />
         <div className="absolute inset-0 flex items-end px-4 pb-10 lg:px-16">
           <div className="mx-auto w-full max-w-[1100px]">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/70">
-              Men of faith
-            </p>
-            <h1 className="mt-2 text-4xl font-bold uppercase text-white md:text-5xl">
-              Men&apos;s Ministry
-            </h1>
+            <CmsMinistryHeroText
+              cms={heroCms}
+              fallbackEyebrow="Men of faith"
+              fallbackTitle="Men's Ministry"
+            />
           </div>
         </div>
       </section>

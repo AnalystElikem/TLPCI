@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { getPageBanner } from "@/lib/content-source";
+import { getWebPageSection } from "@/lib/web-page-content";
+import CmsPageBanner from "@/components/cms/CmsPageSections";
 import Link from "next/link";
 import { Users, Baby, Shirt, Coffee } from "lucide-react";
 import PlanVisitForm from "@/components/get-involved/PlanVisitForm";
@@ -32,40 +33,40 @@ const serviceTimes = [
   },
 ];
 
+const PAGE_ROUTE = "get-involved/plan-your-visit";
+
 export const revalidate = 300;
 
 export default async function PlanYourVisitPage() {
-  const banner = await getPageBanner("Plan Your Visit");
+  const [hero, banner] = await Promise.all([
+    getWebPageSection(PAGE_ROUTE, "hero"),
+    getPageBanner("Plan Your Visit", PAGE_ROUTE),
+  ]);
   return (
     <>
       <ScrollToHash id="plan-visit" />
-      <section className="relative min-h-[430px] overflow-hidden">
-        <Image
-          src={banner || "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1600&q=80"}
-          alt="Church worship service"
-          fill
-          className="object-cover"
-          sizes="100vw"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/20" />
-        <div className="relative mx-auto flex min-h-[430px] max-w-[1200px] items-center px-4 py-16 lg:px-8">
-          <div className="max-w-xl text-white">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/75">
-              Your first Sunday
-            </p>
-            <h1 className="mt-4 text-4xl font-bold uppercase leading-tight md:text-6xl">
-              Plan Your Visit
-            </h1>
-            <p className="mt-5 text-lg leading-relaxed text-white/85">
-              Visiting somewhere new can feel uncertain. We want to make your
-              first Sunday simple, comfortable, and meaningful.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <a href="#plan-visit" className="btn btn-primary">Plan My Visit</a>
-              <Link href="/churches/find" className="btn btn-white">Find a Church</Link>
-            </div>
-          </div>
+      <CmsPageBanner
+        cms={hero}
+        alt="Church worship service"
+        fallbackImage={
+          banner ||
+          "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1600&q=80"
+        }
+        fallbackEyebrow="Your first Sunday"
+        fallbackTitle="Plan Your Visit"
+        fallbackSubtitle="Visiting somewhere new can feel uncertain. We want to make your first Sunday simple, comfortable, and meaningful."
+        heightClass="min-h-[430px]"
+        overlayClass="bg-gradient-to-r from-black/80 via-black/55 to-black/20"
+        showSubtitle
+      />
+      <section className="border-b border-border bg-white">
+        <div className="mx-auto flex max-w-[1200px] flex-wrap gap-3 px-4 py-5 lg:px-8">
+          <a href="#plan-visit" className="btn btn-primary">
+            Plan My Visit
+          </a>
+          <Link href="/churches/find" className="btn btn-outline">
+            Find a Church
+          </Link>
         </div>
       </section>
 
