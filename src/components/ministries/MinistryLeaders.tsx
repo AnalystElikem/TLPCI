@@ -1,4 +1,4 @@
-import Image from "next/image";
+import ContentImage from "@/components/ui/ContentImage";
 
 export interface Leader {
   name: string;
@@ -34,7 +34,6 @@ export default function MinistryLeaders({
     );
   }
 
-  const withImages = leaders.filter((leader) => leader.image);
   const count = leaders.length;
   const gridClass =
     count === 1
@@ -59,21 +58,17 @@ export default function MinistryLeaders({
               key={leader.name || `${leader.role}-${i}`}
               className="text-center"
             >
-              {leader.image ? (
-                <div className="relative mx-auto aspect-[3/4] w-full max-w-[280px] overflow-hidden bg-surface shadow-sm">
-                  <Image
-                    src={leader.image}
-                    alt={leader.name}
-                    fill
-                    className="object-cover object-top"
-                    sizes="280px"
-                  />
-                </div>
-              ) : null}
+              <div className="relative mx-auto aspect-[3/4] w-full max-w-[280px] overflow-hidden bg-surface shadow-sm">
+                <ContentImage
+                  src={leader.image}
+                  alt={leader.name}
+                  fill
+                  imageClassName="object-cover object-top"
+                  sizes="280px"
+                />
+              </div>
               {leader.role ? (
-                <p
-                  className={`text-xs font-bold uppercase tracking-wide text-primary ${leader.image ? "mt-4" : ""}`}
-                >
+                <p className="mt-4 text-xs font-bold uppercase tracking-wide text-primary">
                   {leader.role}
                 </p>
               ) : null}
@@ -83,12 +78,6 @@ export default function MinistryLeaders({
             </article>
           ))}
         </div>
-
-        {withImages.length < leaders.length && withImages.length > 0 ? (
-          <p className="mx-auto mt-8 max-w-lg text-center text-xs text-text-muted">
-            Some leader photos have not been added yet.
-          </p>
-        ) : null}
       </div>
     </section>
   );

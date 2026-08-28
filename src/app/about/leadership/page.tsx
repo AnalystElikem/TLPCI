@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { User } from "lucide-react";
+import ContentImage from "@/components/ui/ContentImage";
 import { getLeadership, getPageBanner } from "@/lib/content-source";
 import { getWebPageSection, webText } from "@/lib/web-page-content";
 import CmsPageBanner from "@/components/cms/CmsPageSections";
@@ -19,19 +19,13 @@ export const revalidate = 300;
 function PersonPhoto({ src, alt }: { src: string; alt: string }) {
   return (
     <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface">
-      {src ? (
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-        />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center bg-gradient-to-b from-muted-surface to-surface">
-          <User className="h-10 w-10 text-border md:h-12 md:w-12" strokeWidth={1.5} />
-        </div>
-      )}
+      <ContentImage
+        src={src}
+        alt={alt}
+        fill
+        imageClassName="object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+      />
     </div>
   );
 }
@@ -98,11 +92,11 @@ export default async function LeadershipPage() {
       <section id="overseer" className="scroll-mt-24 bg-muted-surface py-16 lg:py-24">
         <div className="mx-auto grid max-w-[1200px] gap-10 px-4 md:grid-cols-[minmax(0,380px)_1fr] md:gap-12 lg:px-8 lg:gap-16">
           <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface shadow-sm md:self-start">
-            <Image
+            <ContentImage
               src={go.image}
               alt={go.name}
               fill
-              className="object-cover object-top"
+              imageClassName="object-cover object-top"
               sizes="(max-width: 768px) 100vw, 380px"
               priority
             />

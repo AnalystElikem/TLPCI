@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import ContentImage from "@/components/ui/ContentImage";
 import { Search, MapPin, ChevronDown, ChevronRight } from "lucide-react";
 import type { MinisterGroup } from "@/lib/content-source";
 
@@ -51,8 +52,8 @@ export default function MinistersDirectory({
   if (!ministerGroups.length) {
     return (
       <p className="text-center text-text-muted">
-        Minister records are not available right now. Add ministers in Church IT
-        under <strong>Ministers</strong> to populate this directory.
+        Minister records are not available right now. Add minister positions on
+        <strong>Person</strong> records in Church IT to populate this directory.
       </p>
     );
   }
@@ -136,8 +137,18 @@ export default function MinistersDirectory({
                       <li key={`${group.rank}-${m.id}`}>
                         <Link
                           href={`/churches/pastors/${encodeURIComponent(m.id)}`}
-                          className="group block border-l-2 border-primary bg-white p-4 shadow-sm transition-colors hover:bg-muted-surface"
+                          className="group flex gap-4 border-l-2 border-primary bg-white p-4 shadow-sm transition-colors hover:bg-muted-surface"
                         >
+                          <div className="relative h-20 w-16 shrink-0 overflow-hidden bg-surface">
+                            <ContentImage
+                              src={m.photo}
+                              alt={m.name}
+                              fill
+                              imageClassName="object-cover object-top"
+                              sizes="64px"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-2">
                             <p className="font-bold text-foreground group-hover:text-primary">
                               {m.name}
@@ -164,6 +175,7 @@ export default function MinistersDirectory({
                               )}
                             </p>
                           )}
+                          </div>
                         </Link>
                       </li>
                     ))}

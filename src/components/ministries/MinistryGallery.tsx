@@ -1,18 +1,13 @@
-import Image from "next/image";
-
-const EMPTY_MESSAGE =
-  "Photos from this ministry will be shared here once they are added in Church IT.";
+import ContentImage from "@/components/ui/ContentImage";
 
 export default function MinistryGallery({
   images = [],
   heading = "Moments & Memories",
   subtitle,
-  emptyMessage = EMPTY_MESSAGE,
 }: {
   images?: string[];
   heading?: string;
   subtitle?: string;
-  emptyMessage?: string;
 }) {
   return (
     <section className="bg-muted-surface py-14 lg:py-20">
@@ -33,25 +28,25 @@ export default function MinistryGallery({
           <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
             {images.map((src, i) => (
               <div
-                key={src}
+                key={`${src}-${i}`}
                 className={`relative overflow-hidden bg-surface ${
                   i % 5 === 0 ? "aspect-square" : "aspect-[4/3]"
                 }`}
               >
-                <Image
+                <ContentImage
                   src={src}
                   alt={`${heading} photo ${i + 1}`}
                   fill
-                  className="object-cover transition-transform duration-500 hover:scale-[1.03]"
+                  imageClassName="object-cover transition-transform duration-500 hover:scale-[1.03]"
                   sizes="(max-width: 768px) 50vw, 33vw"
                 />
               </div>
             ))}
           </div>
         ) : (
-          <p className="mx-auto mt-8 max-w-lg text-center text-sm leading-relaxed text-text-muted">
-            {emptyMessage}
-          </p>
+          <div className="relative mx-auto mt-10 aspect-[16/7] max-w-3xl overflow-hidden bg-surface">
+            <ContentImage src={null} alt="" fill />
+          </div>
         )}
       </div>
     </section>

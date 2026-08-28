@@ -46,10 +46,11 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 
 export default async function EventDetailPage({ params }: Props) {
   const { id } = await params;
-  const event = await getEvent(decodeURIComponent(id));
+  const decodedId = decodeURIComponent(id);
+  const all = await getAllEvents();
+  const event = all.find((e) => String(e.id) === decodedId);
   if (!event) notFound();
 
-  const all = await getAllEvents();
   const others = all
     .filter((e) => String(e.id) !== String(event.id))
     .slice(0, 3);
@@ -231,7 +232,7 @@ export default async function EventDetailPage({ params }: Props) {
       {/* Poster preview when hero used a fallback gradient */}
       {!event.poster && (
         <section className="border-t border-border bg-white py-10">
-          <div className="mx-auto flex max-w-[1100px] flex-col items-center gap-4 px-4 text-center lg:px-8">
+          <div className="mx-auto flex max-w-[1100px] justify-center px-4 lg:px-8">
             <Image
               src={CHURCH_LOGO}
               alt=""
@@ -239,9 +240,6 @@ export default async function EventDetailPage({ params }: Props) {
               height={64}
               className="h-16 w-16 object-contain opacity-90"
             />
-            <p className="text-xs uppercase tracking-[0.2em] text-text-muted">
-              Event poster coming soon
-            </p>
           </div>
         </section>
       )}

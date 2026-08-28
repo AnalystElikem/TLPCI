@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import MinistryHeroMedia from "@/components/ministries/MinistryHeroMedia";
+import ContentImage from "@/components/ui/ContentImage";
 import { getGalleryAlbum, getGalleryAlbums } from "@/lib/content-source";
 import GalleryLightbox from "@/components/media/GalleryLightbox";
 
@@ -24,10 +24,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GalleryAlbumPage({ params }: Props) {
   const { slug } = await params;
-  const album = await getGalleryAlbum(slug);
+  const all = await getGalleryAlbums();
+  const album = all.find((a) => a.slug === slug) ?? all.find((a) => a.slug === decodeURIComponent(slug));
   if (!album) notFound();
 
-  const all = await getGalleryAlbums();
   const others = all.filter((a) => a.slug !== album.slug).slice(0, 4);
 
   return (
@@ -37,7 +37,6 @@ export default async function GalleryAlbumPage({ params }: Props) {
           src={album.image}
           alt={album.title}
           priority
-          emptyMessage="A cover image for this gallery will appear here once it is added in Church IT."
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/40 to-black/25" />
         <div className="absolute inset-0 flex flex-col justify-end px-4 pb-8 lg:px-8">
@@ -89,19 +88,13 @@ export default async function GalleryAlbumPage({ params }: Props) {
                   className="group overflow-hidden bg-muted-surface"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden bg-surface">
-                    {item.image ? (
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                        sizes="25vw"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center px-3 text-center text-xs text-text-muted">
-                        No cover image
-                      </div>
-                    )}
+                    <ContentImage
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      imageClassName="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      sizes="25vw"
+                    />
                   </div>
                   <div className="p-3">
                     <p className="text-[11px] font-bold uppercase tracking-wide text-primary">

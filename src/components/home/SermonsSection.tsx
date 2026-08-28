@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import ContentImage from "@/components/ui/ContentImage";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SermonMediaActions from "@/components/sermons/SermonMediaActions";
 import { sermons as fallbackSermons } from "@/data/content";
@@ -18,11 +18,11 @@ export default function SermonsSection({ sermons }: { sermons?: SermonItem[] }) 
           {featured.map((sermon) => (
             <article key={sermon.id} className="card-shadow overflow-hidden">
               <Link href={sermonPath(sermon.id)} className="relative block h-52">
-                <Image
+                <ContentImage
                   src={sermon.image}
                   alt={sermon.title}
                   fill
-                  className="object-cover"
+                  imageClassName="object-cover"
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
                 <span className="date-badge absolute left-3 top-3">{sermon.date}</span>

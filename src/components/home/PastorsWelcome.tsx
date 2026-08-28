@@ -1,4 +1,4 @@
-import Image from "next/image";
+import ContentImage from "@/components/ui/ContentImage";
 import SectionHeading from "@/components/ui/SectionHeading";
 import type { WebPageSectionValues } from "@/lib/web-page-content";
 import { webBodyText, webText } from "@/lib/web-page-content";
@@ -22,7 +22,6 @@ export default function PastorsWelcome({
   cms?: WebPageSectionValues;
   goImage?: string | null;
 }) {
-  const image = goImage || "/images/leadership/general-overseer.jpg";
   const heading = webText(cms ?? {}, "title", "The General Overseer's Welcome");
   const eyebrow = webText(cms ?? {}, "eyebrow", "Welcome to TLPCI");
   const body = webBodyText(cms ?? {}, DEFAULT_MESSAGE.join("\n\n"));
@@ -35,11 +34,12 @@ export default function PastorsWelcome({
 
         <div className="grid gap-10 lg:grid-cols-[minmax(0,420px)_1fr] lg:gap-14">
           <div className="relative aspect-[3/4] overflow-hidden bg-surface shadow-sm lg:aspect-auto lg:h-full">
-            <Image
-              src={image}
+            <ContentImage
+              src={goImage}
+              fallbackSrc="/images/leadership/general-overseer.jpg"
               alt={GO_NAME}
               fill
-              className="object-cover object-top"
+              imageClassName="object-cover object-top"
               sizes="(max-width: 1024px) 100vw, 420px"
             />
           </div>

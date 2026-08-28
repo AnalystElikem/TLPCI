@@ -6,7 +6,7 @@ import { ArrowLeft, BookOpen, HelpCircle } from "lucide-react";
 import {
   devotionPath,
   getDevotion,
-  getDevotions,
+  getRecentDevotions,
 } from "@/lib/content-source";
 
 type Props = { params: Promise<{ id: string }> };
@@ -14,7 +14,7 @@ type Props = { params: Promise<{ id: string }> };
 export const revalidate = 300;
 
 export async function generateStaticParams() {
-  const items = await getDevotions();
+  const items = await getRecentDevotions();
   return items.map((item) => ({ id: encodeURIComponent(String(item.id)) }));
 }
 
@@ -32,10 +32,10 @@ export default async function DevotionDetailPage({ params }: Props) {
   const devotion = await getDevotion(decodeURIComponent(id));
   if (!devotion) notFound();
 
-  const all = await getDevotions();
+  const all = await getRecentDevotions();
   const others = all
     .filter((d) => String(d.id) !== String(devotion.id))
-    .slice(0, 3);
+    .slice(0, 1);
 
   return (
     <>

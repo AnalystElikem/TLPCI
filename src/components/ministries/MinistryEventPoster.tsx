@@ -39,7 +39,7 @@ export default function MinistryEventPoster({
                   sizes="440px"
                 />
               ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-white to-muted-surface p-6 text-center">
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-white to-muted-surface">
                   <Image
                     src={CHURCH_LOGO}
                     alt=""
@@ -47,9 +47,6 @@ export default function MinistryEventPoster({
                     height={64}
                     className="h-16 w-16 object-contain opacity-90"
                   />
-                  <p className="text-xs uppercase tracking-[0.2em] text-text-muted">
-                    Poster coming soon
-                  </p>
                 </div>
               )}
             </div>

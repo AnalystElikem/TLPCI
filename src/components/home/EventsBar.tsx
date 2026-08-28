@@ -48,7 +48,7 @@ export default function EventsBar({ events }: { events?: EventItem[] }) {
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 border-b border-border-subtle bg-gradient-to-b from-white to-muted-surface p-6 text-center">
+                    <div className="absolute inset-0 flex items-center justify-center border-b border-border-subtle bg-gradient-to-b from-white to-muted-surface">
                       <Image
                         src={CHURCH_LOGO}
                         alt=""
@@ -56,10 +56,6 @@ export default function EventsBar({ events }: { events?: EventItem[] }) {
                         height={64}
                         className="h-16 w-16 object-contain opacity-90"
                       />
-                      <span className="date-badge">{event.date}</span>
-                      <p className="text-xs uppercase tracking-[0.2em] text-text-muted">
-                        Poster coming soon
-                      </p>
                     </div>
                   )}
                 </div>
@@ -91,7 +87,7 @@ export default function EventsBar({ events }: { events?: EventItem[] }) {
               className="card-shadow block overflow-hidden"
             >
               <div className="relative aspect-square w-full overflow-hidden bg-white">
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 border-b border-border-subtle bg-gradient-to-b from-white to-muted-surface p-6 text-center">
+                <div className="absolute inset-0 flex items-center justify-center border-b border-border-subtle bg-gradient-to-b from-white to-muted-surface">
                   <Image
                     src={CHURCH_LOGO}
                     alt=""
@@ -99,9 +95,6 @@ export default function EventsBar({ events }: { events?: EventItem[] }) {
                     height={64}
                     className="h-16 w-16 object-contain opacity-90"
                   />
-                  <p className="text-xs uppercase tracking-[0.2em] text-text-muted">
-                    Poster coming soon
-                  </p>
                 </div>
               </div>
               <div className="p-5">

@@ -5,6 +5,8 @@
 // These run only on the server (they call the ERPNext client). Client
 // components receive the results as props from a server component/page.
 
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import {
   events as fallbackEvents,
   sermons as fallbackSermons,
@@ -189,11 +191,10 @@ export type ErpMinistry = {
   published: boolean;
 };
 
-async function fetchAllErpMinistries(): Promise<ErpMinistry[]> {
+const fetchAllErpMinistries = cache(async function fetchAllErpMinistries(): Promise<ErpMinistry[]> {
   const rows = await erpnextList<Record<string, string>>("Ministry", {
     fields: ["name", "ministry_name", "publish"],
     orderBy: "ministry_name asc",
-    fresh: true,
   });
   if (!rows?.length) return [];
   return rows
@@ -203,7 +204,7 @@ async function fetchAllErpMinistries(): Promise<ErpMinistry[]> {
       name: r.ministry_name ?? r.name ?? "",
       published: Number(r.publish) === 1,
     }));
-}
+});
 
 /** Map a site ministry page label to the ERPNext Ministry document id (e.g. MIN-097). */
 export async function resolveSiteMinistryToErpId(
@@ -268,9 +269,9 @@ function sortByEventDate(rows: Record<string, string>[]) {
   );
 }
 
-async function fetchPublishedFunctions(
-  options: { fresh?: boolean } = {}
-): Promise<Record<string, string>[] | null> {
+const fetchPublishedFunctions = cache(async function fetchPublishedFunctions(): Promise<
+  Record<string, string>[] | null
+> {
   const churchItRows = await erpnextList<Record<string, string>>("Function", {
     fields: [
       "name",
@@ -291,7 +292,6 @@ async function fetchPublishedFunctions(
       "custom_is_ad",
     ],
     filters: [["publish", "=", 1]],
-    fresh: options.fresh,
   });
   if (churchItRows !== null) return churchItRows;
 
@@ -299,7 +299,7 @@ async function fetchPublishedFunctions(
     fields: ["*"],
     filters: [["is_published", "=", 1]],
   });
-}
+});
 
 async function fetchMinistryNameMap(
   ids: string[]
@@ -426,7 +426,7 @@ function mapFunction(
 }
 
 /** Church-wide functions for the homepage + Events page (excludes ad poster slots). */
-export async function getEvents(): Promise<EventItem[]> {
+export const getEvents = cache(async function getEvents(): Promise<EventItem[]> {
   const rows = await fetchPublishedFunctions();
   if (!rows || rows.length === 0) return fallbackEvents;
 
@@ -447,11 +447,13 @@ export async function getEvents(): Promise<EventItem[]> {
   );
   sortByEventDate(churchWide);
   return churchWide.map(mapWebsiteEvent);
-}
+});
 
 /** Homepage poster carousel — recent/upcoming ad functions (excludes events list). */
-export async function getHomeAdvertisementBanners(): Promise<EventItem[]> {
-  const rows = await fetchPublishedFunctions({ fresh: true });
+export const getHomeAdvertisementBanners = cache(async function getHomeAdvertisementBanners(): Promise<
+  EventItem[]
+> {
+  const rows = await fetchPublishedFunctions();
   if (!rows?.length) return [];
 
   const ads = rows.filter(isAdFunction);
@@ -487,7 +489,7 @@ export async function getHomeAdvertisementBanners(): Promise<EventItem[]> {
     );
 
   return [...upcoming, ...recent];
-}
+});
 
 /** The next published function tagged to a given ministry (or null). */
 export async function getMinistryEvent(
@@ -575,7 +577,7 @@ export async function getEvent(id: string): Promise<EventItem | null> {
 }
 
 /** All published functions for detail routes (excludes homepage ad poster slots). */
-export async function getAllEvents(): Promise<EventItem[]> {
+export const getAllEvents = cache(async function getAllEvents(): Promise<EventItem[]> {
   const rows = await fetchPublishedFunctions();
   if (!rows || rows.length === 0) return fallbackEvents;
 
@@ -592,7 +594,7 @@ export async function getAllEvents(): Promise<EventItem[]> {
 
   sortByEventDate(eligible);
   return eligible.map(mapWebsiteEvent);
-}
+});
 
 // ------------------------------------------------------------------------ Blog
 export type BlogPost = {
@@ -635,7 +637,6 @@ async function fetchPublishedBlogRows(): Promise<
     fields: BLOG_POST_FIELDS,
     filters: [["published", "=", 1]],
     orderBy: "published_on desc, modified desc",
-    fresh: true,
   });
 }
 
@@ -720,7 +721,6 @@ async function fetchPublishedBlogPosts(): Promise<BlogPost[] | null> {
     fields: BLOG_POST_FIELDS,
     filters: [["published", "=", 1]],
     orderBy: "published_on desc, modified desc",
-    fresh: true,
   });
   if (rows === null) return null;
   if (!rows.length) return [];
@@ -742,7 +742,6 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 export async function getBlogPost(id: string): Promise<BlogPost | null> {
   const decoded = decodeURIComponent(id);
   const row = await erpnextDoc<Record<string, string>>("Blog Post", decoded, {
-    fresh: true,
   });
 
   if (row && Number(row.published) === 1) {
@@ -889,8 +888,9 @@ function isChurchItSermon(r: Record<string, string>): boolean {
   return "prepared_by" in r || "publish" in r;
 }
 
-async function fetchPublishedSermons(): Promise<Record<string, string>[] | null> {
-  // Church IT app — uses `publish` and links to Person / Sermon Series.
+const fetchPublishedSermons = cache(async function fetchPublishedSermons(): Promise<
+  Record<string, string>[] | null
+> {
   const churchItRows = await erpnextList<Record<string, string>>("Sermon", {
     fields: [
       "name",
@@ -910,12 +910,11 @@ async function fetchPublishedSermons(): Promise<Record<string, string>[] | null>
   });
   if (churchItRows !== null) return churchItRows;
 
-  // Custom website DocType from ERPNEXT-SETUP-PLAN.md
   return erpnextList<Record<string, string>>("Sermon", {
     fields: ["*"],
     filters: [["is_published", "=", 1]],
   });
-}
+});
 
 async function fetchPersonMap(
   ids: string[]
@@ -992,7 +991,33 @@ function mapChurchItSermon(
   };
 }
 
-export async function getSermons(): Promise<SermonItem[]> {
+async function mapChurchItSermonRows(
+  rows: Record<string, string>[]
+): Promise<SermonItem[]> {
+  const [personMap, fullDocs] = await Promise.all([
+    fetchPersonMap(rows.map((r) => r.prepared_by ?? "")),
+    Promise.all(
+      rows.map((r) =>
+        r.name ? erpnextDoc<SermonDoc>("Sermon", r.name) : Promise.resolve(null)
+      )
+    ),
+  ]);
+
+  const mapped = rows.map((r, i) => {
+    const { _sortTime, ...sermon } = mapChurchItSermon(
+      mergeChurchItRow(r, fullDocs[i]),
+      fullDocs[i],
+      personMap.get(r.prepared_by ?? ""),
+      i
+    );
+    return { sermon, _sortTime };
+  });
+
+  mapped.sort((a, b) => b._sortTime - a._sortTime);
+  return mapped.map(({ sermon }) => sermon);
+}
+
+export const getSermons = cache(async function getSermons(): Promise<SermonItem[]> {
   const rows = await fetchPublishedSermons();
   if (!rows || rows.length === 0) return fallbackSermons;
 
@@ -1006,39 +1031,37 @@ export async function getSermons(): Promise<SermonItem[]> {
     return rows.map(mapWebsiteSermon);
   }
 
-  const [personMap, fullDocs] = await Promise.all([
-    fetchPersonMap(rows.map((r) => r.prepared_by ?? "")),
-    Promise.all(
-      rows.map((r) =>
-        r.name ? erpnextDoc<SermonDoc>("Sermon", r.name) : Promise.resolve(null)
-      )
-    ),
+  return mapChurchItSermonRows(rows);
+});
+
+export const getSermon = cache(async function getSermon(
+  id: string
+): Promise<SermonItem | null> {
+  const rows = await fetchPublishedSermons();
+  if (!rows?.length) {
+    return fallbackSermons.find((s) => String(s.id) === id) ?? null;
+  }
+
+  const row = rows.find((r) => String(r.name ?? "") === id);
+  if (!row) return null;
+
+  if (!isChurchItSermon(row)) {
+    return mapWebsiteSermon(row, 0);
+  }
+
+  const [personMap, doc] = await Promise.all([
+    fetchPersonMap([row.prepared_by ?? ""]),
+    row.name ? erpnextDoc<SermonDoc>("Sermon", row.name) : Promise.resolve(null),
   ]);
 
-  const mapped = await Promise.all(
-    rows.map(async (r, i) => {
-      const sermon = mapChurchItSermon(
-        mergeChurchItRow(r, fullDocs[i]),
-        fullDocs[i],
-        personMap.get(r.prepared_by ?? ""),
-        i
-      );
-      const streamUrl = sermon.youtubeUrl || sermon.facebookUrl;
-      return {
-        ...sermon,
-        isLive: streamUrl ? await isStreamLive(streamUrl) : false,
-      };
-    })
+  const { _sortTime: _, ...sermon } = mapChurchItSermon(
+    mergeChurchItRow(row, doc),
+    doc,
+    personMap.get(row.prepared_by ?? ""),
+    0
   );
-
-  mapped.sort((a, b) => b._sortTime - a._sortTime);
-  return mapped.map(({ _sortTime: _, ...sermon }) => sermon);
-}
-
-export async function getSermon(id: string): Promise<SermonItem | null> {
-  const sermons = await getSermons();
-  return sermons.find((s) => String(s.id) === id) ?? null;
-}
+  return sermon;
+});
 
 // -------------------------------------------------------------- Livestream
 export type LivestreamInfo = {
@@ -1150,7 +1173,6 @@ export async function getMinistryHero(ministry: string): Promise<string | null> 
   const doc = await erpnextDoc<Record<string, string>>(
     "Ministry",
     ministryId,
-    { fresh: true }
   );
   if (!doc) return null;
 
@@ -1187,8 +1209,10 @@ function leaderMinisterIdOf(row: LeaderListRow): string {
   return (row.name1 ?? row.minister ?? row.leader ?? row.person ?? "").trim();
 }
 
-/** Current or most recent position title(s) from a Ministers position table. */
+/** Current role title(s) from position notes on a Person record. */
 function ministerTitleOf(positions?: PersonPositionRow[]): string {
+  const titled = personPositionTitles(positions);
+  if (titled) return titled;
   if (!positions?.length) return "";
   const current = positions.filter((p) => !p.end_date?.trim());
   const pool = current.length ? current : positions;
@@ -1213,7 +1237,6 @@ export async function getMinistryLeaders(
   const ministry = await erpnextDoc<Record<string, unknown>>(
     "Ministry",
     ministryId,
-    { fresh: true }
   );
   if (!ministry) return [];
 
@@ -1226,23 +1249,29 @@ export async function getMinistryLeaders(
 
   const leaders = await Promise.all(
     sorted.map(async (row): Promise<MinistryLeader | null> => {
-      const ministerId = leaderMinisterIdOf(row);
-      if (!ministerId) return null;
+      const personId = leaderMinisterIdOf(row);
+      if (!personId) return null;
 
-      const minister = await erpnextDoc<{
+      const person = await erpnextDoc<{
         full_name?: string;
         photo?: string;
-        position?: PersonPositionRow[];
-      }>("Ministers", ministerId, { fresh: true });
+        membership_status?: string | null;
+        positions?: PersonPositionRow[];
+      }>("Person", personId);
 
-      if (!minister?.full_name?.trim()) return null;
+      if (!person?.full_name?.trim() || personMembershipIsInactive(person)) {
+        return null;
+      }
 
       return {
-        name: minister.full_name.trim(),
-        role: ministerTitleOf(minister.position),
+        name: personDisplayName(
+          person.full_name.trim(),
+          primaryMinisterType(person.positions)
+        ),
+        role: ministerTitleOf(person.positions),
         image:
           absoluteFileUrl(row.image) ??
-          absoluteFileUrl(minister.photo) ??
+          absoluteFileUrl(person.photo) ??
           "",
       };
     })
@@ -1278,7 +1307,6 @@ export async function getMinistryGallery(
   const ministry = await erpnextDoc<Record<string, unknown>>(
     "Ministry",
     ministryId,
-    { fresh: true }
   );
   if (!ministry) return [];
 
@@ -1381,13 +1409,14 @@ function mapChurchGalleryCategory(
   };
 }
 
-async function fetchChurchGalleryCategories(): Promise<GalleryAlbum[]> {
+const fetchChurchGalleryCategories = cache(async function fetchChurchGalleryCategories(): Promise<
+  GalleryAlbum[]
+> {
   const rows = await erpnextList<Record<string, string>>(
     "Church Gallery Category",
     {
       fields: ["name", "title", "description", "modified", "creation"],
       orderBy: "modified desc",
-      fresh: true,
     }
   );
   if (!rows?.length) return [];
@@ -1396,27 +1425,28 @@ async function fetchChurchGalleryCategories(): Promise<GalleryAlbum[]> {
     rows.map(async (row) => {
       const doc = await erpnextDoc<Record<string, unknown>>(
         "Church Gallery Category",
-        row.name,
-        { fresh: true }
+        row.name
       );
       return doc ? mapChurchGalleryCategory(doc) : null;
     })
   );
 
   return albums.filter((a): a is GalleryAlbum => Boolean(a));
-}
+});
 
 /** Church gallery categories from Church IT (Church Gallery Category doctype). */
-export async function getGalleryAlbums(): Promise<GalleryAlbum[]> {
+export const getGalleryAlbums = cache(async function getGalleryAlbums(): Promise<
+  GalleryAlbum[]
+> {
   return fetchChurchGalleryCategories();
-}
+});
 
 /** A single gallery category by slug. */
 export async function getGalleryAlbum(
   slug: string
 ): Promise<GalleryAlbum | null> {
   const decoded = decodeURIComponent(slug);
-  const albums = await fetchChurchGalleryCategories();
+  const albums = await getGalleryAlbums();
   return (
     albums.find((a) => a.slug === decoded) ??
     albums.find((a) => churchGallerySlug(a.title) === decoded) ??
@@ -1456,34 +1486,35 @@ function htmlToParagraphs(html?: string | null): string[] {
 }
 
 /**
- * Leadership for the Leadership page. Executive ministers (is_executive) come
- * from the Ministers doctype. Past overseers still use Executive Committee
- * when published there.
+ * Leadership for the Leadership page. Persons flagged as executive-only or
+ * executive-minister in Church IT appear here. Past overseers still use
+ * Executive Committee when published there.
  */
-export async function getLeadership(): Promise<Leadership> {
+export const getLeadership = cache(async function getLeadership(): Promise<Leadership> {
   const fallback: Leadership = {
     generalOverseer: fallbackGO as LeaderGO,
     council: fallbackCouncil as CouncilMember[],
     pastOverseers: fallbackPast as PastOverseer[],
   };
 
-  const ministerRecords = await fetchAllMinisterRecords();
-  const executives = ministerRecords.filter(isExecutiveMinister);
+  const personRecords = await fetchAllMinisterPersonRecords();
+  const executives = personRecords.filter(isExecutivePerson);
 
   let generalOverseer: LeaderGO = fallback.generalOverseer;
   let council: CouncilMember[] = fallback.council;
 
   if (executives.length) {
-    const goRecord = executives.find(isGeneralOverseerRecord) ?? null;
+    const goRecord = executives.find(isGeneralOverseerPerson) ?? null;
     const councilRecords = goRecord
       ? executives.filter((record) => record.name !== goRecord.name)
       : executives;
 
     if (goRecord?.full_name?.trim()) {
+      const goType = primaryMinisterType(goRecord.positions);
       generalOverseer = {
         ...(fallbackGO as LeaderGO),
-        name: goRecord.full_name.trim(),
-        role: ministerExecutiveRoleOf(goRecord) || fallbackGO.role,
+        name: personDisplayName(goRecord.full_name.trim(), goType),
+        role: personExecutiveRoleOf(goRecord) || fallbackGO.role,
         image: absoluteFileUrl(goRecord.photo) ?? fallbackGO.image,
         bio: fallbackGO.bio as string[],
       };
@@ -1493,8 +1524,11 @@ export async function getLeadership(): Promise<Leadership> {
       council = councilRecords
         .filter((record) => record.full_name?.trim())
         .map((record) => ({
-          name: record.full_name!.trim(),
-          role: ministerExecutiveRoleOf(record),
+          name: personDisplayName(
+            record.full_name!.trim(),
+            primaryMinisterType(record.positions)
+          ),
+          role: personExecutiveRoleOf(record),
           image: absoluteFileUrl(record.photo) ?? "",
         }));
     }
@@ -1559,7 +1593,7 @@ export async function getLeadership(): Promise<Leadership> {
     : fallback.pastOverseers;
 
   return { generalOverseer, council, pastOverseers };
-}
+});
 
 // ------------------------------------------------------------------- Devotion
 export type DevotionItem = {
@@ -1613,6 +1647,33 @@ export async function getLatestDevotion(): Promise<DevotionItem> {
   return mapHardcodedDevotion(devotions[index], index, devotionDateLabel());
 }
 
+function devotionIndexForDate(date: Date): number {
+  return dayOfYear(date) % devotions.length;
+}
+
+/** Today and yesterday only — for the devotions listing page. */
+export async function getRecentDevotions(): Promise<DevotionItem[]> {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+
+  const todayIndex = devotionIndexForDate(today);
+  const yesterdayIndex = devotionIndexForDate(yesterday);
+
+  return [
+    mapHardcodedDevotion(
+      devotions[todayIndex],
+      todayIndex,
+      devotionDateLabel(today)
+    ),
+    mapHardcodedDevotion(
+      devotions[yesterdayIndex],
+      yesterdayIndex,
+      devotionDateLabel(yesterday)
+    ),
+  ];
+}
+
 export async function getDevotions(): Promise<DevotionItem[]> {
   const todayIndex = dayOfYear() % devotions.length;
   const items = devotions.map((d, i) => mapHardcodedDevotion(d, i));
@@ -1627,8 +1688,15 @@ export async function getDevotion(id: string): Promise<DevotionItem | null> {
     return null;
   }
   const item = mapHardcodedDevotion(devotions[index], index);
-  if (index === dayOfYear() % devotions.length) {
+  const todayIndex = devotionIndexForDate(new Date());
+  const yesterday = new Date();
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+  const yesterdayIndex = devotionIndexForDate(yesterday);
+
+  if (index === todayIndex) {
     item.dateLabel = devotionDateLabel();
+  } else if (index === yesterdayIndex) {
+    item.dateLabel = devotionDateLabel(yesterday);
   }
   return item;
 }
@@ -1714,7 +1782,6 @@ export async function getTestimonies(): Promise<TestimonyItem[]> {
     fields: TESTIMONY_FIELDS,
     filters: TESTIMONY_FILTERS,
     orderBy: "date_of_testimony desc, modified desc",
-    fresh: true,
   });
   if (!rows?.length) return [];
   return rows.map(mapTestimonyRow);
@@ -1722,7 +1789,6 @@ export async function getTestimonies(): Promise<TestimonyItem[]> {
 
 export async function getTestimony(id: string): Promise<TestimonyItem | null> {
   const row = await erpnextDoc<Record<string, string>>("Testimonies", id, {
-    fresh: true,
   });
   if (!row) return null;
   if (Number(row.publish) !== 1 || Number(row.is_approved) !== 1) return null;
@@ -1759,13 +1825,15 @@ export type MinisterDetail = Minister & {
   positions: MinisterPosition[];
 };
 
-type MinistersRecord = {
+type PersonMinisterRecord = {
   name?: string;
   full_name?: string;
   photo?: string;
-  location?: string;
-  is_executive?: number | boolean;
-  position?: PersonPositionRow[];
+  custom_location?: string;
+  custom_is_executive?: number | boolean | string;
+  custom_is_executiveminister?: number | boolean | string;
+  membership_status?: string | null;
+  positions?: PersonPositionRow[];
 };
 
 const MINISTER_RANK_ORDER = [
@@ -1818,17 +1886,44 @@ function primaryMinisterType(positions?: PersonPositionRow[]): string {
   return pool[0]?.position?.trim() ?? "";
 }
 
+/** Strip legacy "Ordained YYYY" suffixes from position notes — notes are titles only. */
+function positionTitleFromNotes(notes?: string): string {
+  return (notes ?? "")
+    .replace(/\s*·?\s*Ordained\s+\d{4}\s*/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Strip legacy "Ordained YYYY" suffixes; fall back to position when notes are empty. */
+function positionTitleFromRow(row: PersonPositionRow): string {
+  const fromNotes = positionTitleFromNotes(row.notes);
+  if (fromNotes) return fromNotes;
+  return row.position?.trim() ?? "";
+}
+
+/** All current role titles stored in position notes (e.g. General Secretary). */
+function personPositionTitles(positions?: PersonPositionRow[]): string {
+  const titles = currentPersonPositions(positions)
+    .map((row) => positionTitleFromRow(row))
+    .filter(Boolean);
+  return [...new Set(titles)].join(" · ");
+}
+
+/** Primary/current title from the most recent active position row. */
+function primaryPositionTitle(positions?: PersonPositionRow[]): string {
+  const pool = sortedPersonPositions(currentPersonPositions(positions));
+  for (const row of pool) {
+    const title = positionTitleFromRow(row);
+    if (title) return title;
+  }
+  return "";
+}
+
 function ministerOfficeOf(
   positions: PersonPositionRow[] | undefined,
-  primaryType: string
+  _primaryType: string
 ): string {
-  const titles = currentPersonPositions(positions)
-    .map((p) => p.position?.trim())
-    .filter((title): title is string => Boolean(title) && title !== primaryType);
-  const notes = currentPersonPositions(positions)
-    .map((p) => p.notes?.trim())
-    .filter(Boolean);
-  return [...new Set([...titles, ...notes])].join(" · ");
+  return personPositionTitles(positions);
 }
 
 function ministerOrdainedYear(positionStart?: string): string | undefined {
@@ -1844,50 +1939,115 @@ function mapMinisterPositions(
     title: row.position?.trim() ?? "",
     startDate: row.start_date ?? "",
     endDate: row.end_date?.trim() || undefined,
-    notes: row.notes?.trim() || undefined,
+    notes: positionTitleFromRow(row) || undefined,
     current: !row.end_date?.trim(),
   }));
 }
 
-function isExecutiveMinister(record: MinistersRecord): boolean {
-  return Number(record.is_executive) === 1 || record.is_executive === true;
+function personDisplayName(fullName: string, primaryType: string): string {
+  const name = fullName.trim();
+  if (!name || !primaryType) return name;
+  const lower = name.toLowerCase();
+  if (lower.startsWith(`${primaryType.toLowerCase()} `)) return name;
+  return `${primaryType} ${name}`;
 }
 
-function isGeneralOverseerRecord(record: MinistersRecord): boolean {
-  return currentPersonPositions(record.position).some((row) =>
+function isFrappeYes(value: unknown): boolean {
+  if (value === 1 || value === true) return true;
+  return String(value ?? "")
+    .trim()
+    .toLowerCase() === "yes";
+}
+
+function personMembershipIsInactive(record: {
+  membership_status?: string | null;
+}): boolean {
+  return (
+    String(record.membership_status ?? "").trim().toLowerCase() === "inactive"
+  );
+}
+
+/** Leadership page — executive only, or executive + minister. */
+function personShowsOnLeadership(record: PersonMinisterRecord): boolean {
+  return (
+    isFrappeYes(record.custom_is_executive) ||
+    isFrappeYes(record.custom_is_executiveminister)
+  );
+}
+
+function personIsExecutiveMinister(record: PersonMinisterRecord): boolean {
+  return isFrappeYes(record.custom_is_executiveminister);
+}
+
+/** `custom_is_executive` marks leadership-only — not listed on the ministers directory. */
+function personIsExecutiveOnly(record: PersonMinisterRecord): boolean {
+  return (
+    isFrappeYes(record.custom_is_executive) && !personIsExecutiveMinister(record)
+  );
+}
+
+function personHasAnyPosition(record: PersonMinisterRecord): boolean {
+  return currentPersonPositions(record.positions).some((row) =>
+    Boolean(row.position?.trim())
+  );
+}
+
+/** Ministers directory — anyone with a position, except executive-only leaders. */
+function personHasMinisterPosition(record: PersonMinisterRecord): boolean {
+  if (!personHasAnyPosition(record)) return false;
+  return !personIsExecutiveOnly(record);
+}
+
+function shouldIncludePersonRecord(record: PersonMinisterRecord): boolean {
+  if (!record.full_name?.trim()) return false;
+  if (personMembershipIsInactive(record)) return false;
+  return personShowsOnLeadership(record) || personHasMinisterPosition(record);
+}
+
+function isExecutivePerson(record: PersonMinisterRecord): boolean {
+  return personShowsOnLeadership(record);
+}
+
+function isGeneralOverseerPerson(record: PersonMinisterRecord): boolean {
+  return currentPersonPositions(record.positions).some((row) =>
     /general overseer/i.test(row.notes ?? "")
   );
 }
 
-function ministerExecutiveRoleOf(record: MinistersRecord): string {
-  const pool = sortedPersonPositions(currentPersonPositions(record.position));
-  const primary = pool[0];
-  return primary?.notes?.trim() || primary?.position?.trim() || "";
+function personExecutiveRoleOf(record: PersonMinisterRecord): string {
+  return (
+    primaryPositionTitle(record.positions) ||
+    primaryMinisterType(record.positions)
+  );
 }
 
-function mapMinistersRecordToMinister(
-  record: MinistersRecord,
+function mapPersonToMinister(
+  record: PersonMinisterRecord,
   locationMap?: Map<string, string>
 ): Minister | null {
-  const primaryType = primaryMinisterType(record.position);
-  if (!primaryType || !record.full_name?.trim()) return null;
+  if (!record.full_name?.trim() || !personHasMinisterPosition(record)) {
+    return null;
+  }
+
+  const primaryType = primaryMinisterType(record.positions);
+  if (!primaryType) return null;
 
   const minister: Minister = {
     id: record.name ?? record.full_name.trim(),
-    name: record.full_name.trim(),
+    name: personDisplayName(record.full_name.trim(), primaryType),
     positionType: primaryType,
     rank: ministerRankPlural(primaryType),
   };
 
-  const office = ministerOfficeOf(record.position, primaryType);
+  const office = ministerOfficeOf(record.positions, primaryType);
   if (office) minister.office = office;
 
-  const locationId = record.location?.trim();
+  const locationId = record.custom_location?.trim();
   const branch = locationId ? locationMap?.get(locationId) : undefined;
   if (branch) minister.branch = branch;
 
   const primaryStart = sortedPersonPositions(
-    currentPersonPositions(record.position)
+    currentPersonPositions(record.positions)
   )[0]?.start_date;
   const ordained = ministerOrdainedYear(primaryStart);
   if (ordained) minister.ordained = ordained;
@@ -1898,25 +2058,26 @@ function mapMinistersRecordToMinister(
   return minister;
 }
 
-function mapMinistersRecordToDetail(
-  record: MinistersRecord,
+function mapPersonToDetail(
+  record: PersonMinisterRecord,
   locationMap?: Map<string, string>
 ): MinisterDetail | null {
-  const base = mapMinistersRecordToMinister(record, locationMap);
+  const base = mapPersonToMinister(record, locationMap);
   if (!base) return null;
 
   return {
     ...base,
-    positions: mapMinisterPositions(record.position),
+    positions: mapMinisterPositions(record.positions),
   };
 }
 
-async function fetchChurchLocationMap(): Promise<Map<string, string>> {
+const fetchChurchLocationMap = cache(async function fetchChurchLocationMap(): Promise<
+  Map<string, string>
+> {
   const rows = await erpnextList<{ name?: string; location?: string }>(
     "Church Location",
     {
       fields: ["name", "location"],
-      fresh: true,
     }
   );
   const map = new Map<string, string>();
@@ -1926,41 +2087,112 @@ async function fetchChurchLocationMap(): Promise<Map<string, string>> {
     }
   }
   return map;
+});
+
+/** Flat row shape when requesting Person positions via list API dot fields. */
+type PersonListRow = {
+  name?: string;
+  full_name?: string;
+  photo?: string;
+  custom_location?: string;
+  custom_is_executive?: number | boolean | string;
+  custom_is_executiveminister?: number | boolean | string;
+  membership_status?: string | null;
+  position?: string | null;
+  notes?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+};
+
+const PERSON_LIST_FIELDS = [
+  "name",
+  "full_name",
+  "photo",
+  "custom_location",
+  "custom_is_executive",
+  "custom_is_executiveminister",
+  "membership_status",
+  "positions.position",
+  "positions.notes",
+  "positions.start_date",
+  "positions.end_date",
+] as const;
+
+/** Merge list rows (one row per position) into Person records with a positions array. */
+function normalizePersonListRows(rows: PersonListRow[]): PersonMinisterRecord[] {
+  const byName = new Map<string, PersonMinisterRecord>();
+
+  for (const row of rows) {
+    const id = row.name?.trim();
+    if (!id) continue;
+
+    const positionRow: PersonPositionRow | null = row.position?.trim()
+      ? {
+          position: row.position.trim(),
+          notes: row.notes?.trim() || undefined,
+          start_date: row.start_date ?? "",
+          end_date: row.end_date?.trim() || undefined,
+        }
+      : null;
+
+    const existing = byName.get(id);
+    if (existing) {
+      if (positionRow) {
+        existing.positions = [...(existing.positions ?? []), positionRow];
+      }
+      continue;
+    }
+
+    byName.set(id, {
+      name: id,
+      full_name: row.full_name,
+      photo: row.photo,
+      custom_location: row.custom_location,
+      custom_is_executive: row.custom_is_executive,
+      custom_is_executiveminister: row.custom_is_executiveminister,
+      membership_status: row.membership_status,
+      positions: positionRow ? [positionRow] : [],
+    });
+  }
+
+  return [...byName.values()];
 }
 
-async function fetchAllMinisterRecords(): Promise<MinistersRecord[]> {
-  const rows = await erpnextList<{ name?: string }>("Ministers", {
-    fields: ["name"],
+async function loadMinisterPersonRecordsFromErp(): Promise<PersonMinisterRecord[]> {
+  const rows = await erpnextList<PersonListRow>("Person", {
+    fields: [...PERSON_LIST_FIELDS],
     orderBy: "full_name asc",
-    fresh: true,
   });
   if (!rows?.length) return [];
 
-  return (
-    await Promise.all(
-      rows.map(async (row) => {
-        if (!row.name) return null;
-        return erpnextDoc<MinistersRecord>("Ministers", row.name, {
-          fresh: true,
-        });
-      })
-    )
-  ).filter((record): record is MinistersRecord =>
-    Boolean(record?.full_name?.trim())
-  );
+  return normalizePersonListRows(rows).filter(shouldIncludePersonRecord);
 }
 
-/** Ministers grouped by current Position Type from ERPNext Ministers records. */
-export async function getMinisters(): Promise<MinisterGroup[]> {
+const getCachedMinisterPersonRecords = unstable_cache(
+  loadMinisterPersonRecordsFromErp,
+  ["minister-person-records"],
+  { revalidate: 300, tags: ["ministers"] }
+);
+
+const fetchAllMinisterPersonRecords = cache(async function fetchAllMinisterPersonRecords(): Promise<
+  PersonMinisterRecord[]
+> {
+  return getCachedMinisterPersonRecords();
+});
+
+/** Ministers grouped by current position from ERPNext Person records. */
+export const getMinisters = cache(async function getMinisters(): Promise<
+  MinisterGroup[]
+> {
   const [records, locationMap] = await Promise.all([
-    fetchAllMinisterRecords(),
+    fetchAllMinisterPersonRecords(),
     fetchChurchLocationMap(),
   ]);
 
   const byRank = new Map<string, Minister[]>();
 
   for (const record of records) {
-    const minister = mapMinistersRecordToMinister(record, locationMap);
+    const minister = mapPersonToMinister(record, locationMap);
     if (!minister) continue;
 
     if (!byRank.has(minister.positionType)) {
@@ -1980,18 +2212,24 @@ export async function getMinisters(): Promise<MinisterGroup[]> {
       count: ministers.length,
       ministers: ministers.sort((a, b) => a.name.localeCompare(b.name)),
     }));
-}
+});
 
-/** Single minister profile from a Ministers record (must have a position). */
-export async function getMinister(id: string): Promise<MinisterDetail | null> {
-  const record = await erpnextDoc<MinistersRecord>("Ministers", id, {
-    fresh: true,
-  });
-  if (!record) return null;
+/** Single minister profile from a Person record (must have a minister position). */
+export const getMinister = cache(async function getMinister(
+  id: string
+): Promise<MinisterDetail | null> {
+  const record = await erpnextDoc<PersonMinisterRecord>("Person", id);
+  if (
+    !record ||
+    personMembershipIsInactive(record) ||
+    !personHasMinisterPosition(record)
+  ) {
+    return null;
+  }
 
   const locationMap = await fetchChurchLocationMap();
-  return mapMinistersRecordToDetail(record, locationMap);
-}
+  return mapPersonToDetail(record, locationMap);
+});
 
 /** Minister IDs for static generation and links. */
 export async function getMinisterIds(): Promise<string[]> {

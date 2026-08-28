@@ -1,8 +1,8 @@
+import ContentImage from "@/components/ui/ContentImage";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, MapPin, User } from "lucide-react";
+import { ArrowLeft, MapPin } from "lucide-react";
 import {
   getMinister,
   getMinisterIds,
@@ -37,10 +37,13 @@ function formatServiceDates(startDate: string, endDate?: string): string {
 
 export default async function MinisterDetailPage({ params }: Props) {
   const { id } = await params;
-  const minister = await getMinister(decodeURIComponent(id));
+  const decodedId = decodeURIComponent(id);
+  const [minister, groups] = await Promise.all([
+    getMinister(decodedId),
+    getMinisters(),
+  ]);
   if (!minister) notFound();
 
-  const groups = await getMinisters();
   const others = groups
     .flatMap((group) => group.ministers)
     .filter((m) => m.id !== minister.id)
@@ -60,23 +63,14 @@ export default async function MinisterDetailPage({ params }: Props) {
 
           <div className="mt-8 grid gap-10 md:grid-cols-[minmax(0,320px)_1fr] md:items-start">
             <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface shadow-sm">
-              {minister.photo ? (
-                <Image
-                  src={minister.photo}
-                  alt={minister.name}
-                  fill
-                  className="object-cover object-top"
-                  sizes="(max-width: 768px) 100vw, 320px"
-                  priority
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-b from-muted-surface to-surface">
-                  <User
-                    className="h-16 w-16 text-border"
-                    strokeWidth={1.5}
-                  />
-                </div>
-              )}
+              <ContentImage
+                src={minister.photo}
+                alt={minister.name}
+                fill
+                imageClassName="object-cover object-top"
+                sizes="(max-width: 768px) 100vw, 320px"
+                priority
+              />
             </div>
 
             <div>

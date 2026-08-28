@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -9,6 +8,7 @@ import {
   Play,
   User,
 } from "lucide-react";
+import ContentImage from "@/components/ui/ContentImage";
 import SermonMediaActions from "@/components/sermons/SermonMediaActions";
 import { getSermon, getSermons, sermonPath } from "@/lib/content-source";
 import { sanitizeHtml } from "@/lib/sanitize";
@@ -36,10 +36,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SermonDetailPage({ params }: Props) {
   const { id } = await params;
-  const sermon = await getSermon(decodeURIComponent(id));
+  const decodedId = decodeURIComponent(id);
+  const all = await getSermons();
+  const sermon = all.find((s) => String(s.id) === decodedId);
   if (!sermon) notFound();
 
-  const all = await getSermons();
   const others = all
     .filter((s) => String(s.id) !== String(sermon.id))
     .slice(0, 3);
@@ -50,11 +51,11 @@ export default async function SermonDetailPage({ params }: Props) {
   return (
     <>
       <section className="relative h-[260px] overflow-hidden md:h-[380px]">
-        <Image
+        <ContentImage
           src={sermon.image}
           alt={sermon.title}
           fill
-          className="object-cover"
+          imageClassName="object-cover"
           sizes="100vw"
           priority
         />
@@ -222,11 +223,11 @@ export default async function SermonDetailPage({ params }: Props) {
                   className="group block overflow-hidden bg-white shadow-sm"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
+                    <ContentImage
                       src={s.image}
                       alt={s.title}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      imageClassName="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                       sizes="(max-width: 640px) 100vw, 33vw"
                     />
                   </div>

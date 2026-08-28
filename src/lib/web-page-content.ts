@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { absoluteFileUrl, erpnextDoc, erpnextList } from "@/lib/erpnext";
 
 export type WebPageSectionValues = {
@@ -140,7 +141,7 @@ export function heroSlidesFromWebPage(
 }
 
 /** All published Page Builder sections for a site route (e.g. "about/our-story"). */
-export async function getWebPageContent(
+export const getWebPageContent = cache(async function getWebPageContent(
   route: string
 ): Promise<WebPageSection[]> {
   const normalized = normalizeRoute(route);
@@ -154,7 +155,6 @@ export async function getWebPageContent(
       ["content_type", "=", "Page Builder"],
     ],
     limit: 1,
-    fresh: true,
   });
 
   const pageName = rows?.[0]?.name;
@@ -162,14 +162,14 @@ export async function getWebPageContent(
 
   const doc = await erpnextDoc<{
     page_blocks?: WebPageBlockRow[];
-  }>("Web Page", pageName, { fresh: true });
+  }>("Web Page", pageName);
 
   const blocks = doc?.page_blocks ?? [];
   return [...blocks]
     .sort((a, b) => (Number(a.idx) || 0) - (Number(b.idx) || 0))
     .map(mapBlockRow)
     .filter((section): section is WebPageSection => Boolean(section));
-}
+});
 
 /** One section by section_id, or the first block when id is omitted. */
 export async function getWebPageSection(

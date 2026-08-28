@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import ContentImage from "@/components/ui/ContentImage";
 import type { GalleryAlbum } from "@/lib/content-source";
 
 const EMPTY_MESSAGE =
@@ -82,19 +82,13 @@ export default function GalleryAlbumGrid({
                       item.tall ? "aspect-[3/4]" : "aspect-[4/3]"
                     }`}
                   >
-                    {item.image ? (
-                      <Image
-                        src={item.image}
-                        alt={item.title}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center px-4 text-center text-xs text-text-muted">
-                        No cover image yet
-                      </div>
-                    )}
+                    <ContentImage
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      imageClassName="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                     <div className="absolute bottom-0 left-0 p-5">
                       <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/70">
