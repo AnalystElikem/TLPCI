@@ -19,8 +19,9 @@ export const HOME_HERO_FALLBACKS = [
   {
     title: "God Is In This Place",
     text: "There is a place for you here. Come, worship with us, and encounter the life-changing power of God.",
-    image:
-      "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1800&q=80",
+    image: "/images/home/hero-god-is-in-this-place.jpg",
+    // Phones show a tighter crop on the two preachers and the congregation heads.
+    mobileImage: "/images/home/hero-god-is-in-this-place-mobile.jpg",
     ctaLabel: "Find Out More",
     ctaHref: "/about/our-story",
   },

@@ -254,13 +254,13 @@ dialog.** With it on, ERPNext shrinks the picture (a 2400 pixel image came back
 lower left, so keep faces and key details away from that corner. A portrait photo
 needs a wide background built around it first; ask me and I will make it. If
 **Image** is blank, the slide shows the built-in photo for that slot (slot 1 is
-the Women's Convention 2026 photo in the repo, slot 2 is the 2026 theme design (a flame with rings spreading outward, no text), slot 3 is a stock photo).
-Slide 3 currently holds a placeholder image, so it needs a real photo.
+the Women's Convention 2026 photo in the repo, slot 2 is the 2026 theme design (a flame with rings spreading outward, no text), slot 3 is the General Conference photo (the two preachers)).
+Slide 3's ERPNext image is still a placeholder, so upload the real one there.
 
-**Phones show a different picture for slide 1.** Under 768 pixels wide, slide 1 shows
-a close-up of the First Lady instead of the collage. That phone picture lives in the
-repo (`public/images/home/hero-first-lady-mobile.jpg`), not in ERPNext, so changing
-slide 1's Image in ERPNext changes laptops and tablets only. To change the phone
+**Phones show a different picture for slides 1 and 3.** Under 768 pixels wide, slide 1 shows
+a close-up of the First Lady instead of the collage, and slide 3 shows a tighter crop of the two preachers. That phone picture lives in the
+repo (`public/images/home/hero-first-lady-mobile.jpg` and `hero-god-is-in-this-place-mobile.jpg`), not in ERPNext, so changing
+those slides' Image in ERPNext changes laptops and tablets only. To change the phone
 picture, ask me and I will swap the file (a square image, about 900 x 900, works best).
 
 **Interior pages** each have one `hero` block with **Eyebrow**, **Title**,
