@@ -218,7 +218,7 @@ and Save. The site picks it up within about **5 minutes**.
 
 | Where in ERPNext | Drives on the site | Shows only when |
 |---|---|---|
-| **Function** (Ministries) | Events page and homepage "Upcoming Events" | **Publish** is ticked; leave "Is AD" unticked |
+| **Function** (Ministries) | Events page and homepage "Upcoming Events" | **Publish** is ticked; leave "Is AD" unticked. An Is AD function appears only in the homepage banner (shown until 14 days after it ends), not on the Events page |
 | **Sermon** | Sermons page and homepage | **Publish** is ticked |
 | **Blog Post** | Latest News page and homepage | **Published** is ticked |
 | **Testimonies** | Testimonies page. Visitor submissions arrive unpublished | **Approved** and **Publish** both ticked |
@@ -312,7 +312,7 @@ image (a mug pattern). Replace or clear it.
 | To do this | Open |
 |---|---|
 | Add an event | [Function list](https://new---tlpci.nvi.frappe.cloud/desk/function) (tick Publish; leave "Is AD" off) |
-| Add a Lord's Hour or ad banner | [Function list](https://new---tlpci.nvi.frappe.cloud/desk/function) (tick "Is AD") |
+| Add a big-event banner to the homepage (shows after the Lord's Hour) | [New Function](https://new---tlpci.nvi.frappe.cloud/desk/function/new): tick **Publish** and **Is AD**, attach a 3:2 poster in **Event Poster** (about 2400 x 1600, Optimize unticked) |
 | Add a sermon | [Sermon list](https://new---tlpci.nvi.frappe.cloud/desk/sermon) |
 | Add a news story | [Blog Post list](https://new---tlpci.nvi.frappe.cloud/desk/blog-post) |
 | Approve a testimony | [Testimonies list](https://new---tlpci.nvi.frappe.cloud/desk/testimonies) (tick Approved and Publish) |
@@ -373,7 +373,7 @@ see `.env.local.example`). If a key is ever exposed, regenerate it on that user
 
 ### Image sizes
 
-Event poster square 1080x1080; News and Sermon images landscape 16:9 (about
+Homepage banner posters (Function with Is AD ticked) 3:2 landscape, about 2400 x 1600; other event posters square 1080x1080; News and Sermon images landscape 16:9 (about
 1600 to 1920 wide); Gallery cover about 1200x900; Leadership portraits about
 800x1000. Keep files under 1 to 2 MB so pages stay fast.
 
