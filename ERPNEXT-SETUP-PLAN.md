@@ -1,3 +1,5 @@
+> **Historical document.** This was the original plan for a custom set of content doctypes (Web Event, Web News, Gallery Album and so on) on the old `tlpci.frappe.cloud` site. The live site now uses the Church app on `new---tlpci.nvi.frappe.cloud` (Function, Sermon, Blog Post, Testimonies, Person...). See `MAINTENANCE-GUIDE.md` for how things work today.
+
 # ERPNext Backend — Setup & Content Model Plan
 
 Goal: manage **Events, News, Sermons, and a photo Gallery** in ERPNext, and have

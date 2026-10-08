@@ -1,30 +1,40 @@
-# TLPCI Website — Content & Maintenance Guide
+# TLPCI Website: Content & Maintenance Guide
 
 A plain-English guide to updating the site: what to change, where it lives, and
 how to make the change go live. No deep coding knowledge required for most of it.
 
+**Live site:** https://tlpci-three.vercel.app (Vercel project `tlpci`)
+**Code:** https://github.com/AnalystElikem/TLPCI (the one repo)
+**Content admin (ERPNext):** https://new---tlpci.nvi.frappe.cloud
+
 ---
 
-## 0. The golden rule: how ANY change goes live
+## 0. The two ways a change goes live
 
-The website runs on Vercel and rebuilds itself whenever new code is pushed to
-GitHub. So every change follows the same three-step loop:
+**A. Content in ERPNext** (people, sermons, news, events, testimonies, gallery,
+prayer requests and form inboxes). Log in, add or edit the record, tick
+**Publish**, Save. The site picks it up within about **5 minutes**. No push, no
+rebuild. See §7.
+
+**B. Text, images or lists that live in the code.** These follow a three-step loop:
 
 1. **Change the file** on your computer (drop in an image, or edit text).
-2. **Push it to GitHub.** In PowerShell, from the project folder:
+2. **Push it to GitHub.** In Command Prompt, from the project folder:
    ```
-   cd C:\Users\ElikemAflakpui\Downloads\Church-website-main
+   cd %USERPROFILE%\Documents\TLPCI
+   git pull
    git add .
    git commit -m "Describe what you changed"
    git push
    ```
-3. **Wait ~1–2 minutes.** Vercel detects the push and redeploys automatically.
-   Watch it at vercel.com → your project → **Deployments**.
+3. **Wait about 1 to 2 minutes.** Vercel detects the push and redeploys
+   automatically. Watch it at vercel.com, your project, **Deployments**.
 
-That's it. If you can do those three steps, you can update almost anything below.
-
-> Tip: after editing, always run `npm run build` once locally first. If it
-> succeeds, the push will succeed on Vercel too.
+> First time on a new computer? Run `git clone https://github.com/AnalystElikem/TLPCI.git`
+> in `Documents` first.
+>
+> Tip: after editing, run `npm run build` once locally. If it succeeds, the push
+> will succeed on Vercel too.
 
 ---
 
@@ -40,13 +50,14 @@ That's it. If you can do those three steps, you can update almost anything below
 | Daily devotionals | `src/data/devotions.ts` |
 | "Prayers for Souls" slider (missions) | `src/components/ministries/PrayersForSouls.tsx` |
 | Basis of Faith + mission statement | `src/data/content.ts` (`basisOfFaith`) & `src/app/about/what-we-believe/page.tsx` |
-| Ministers / pastors list | **`TLPCI Ministers Database.xlsx`** (see §4) |
+| Ministers / pastors list | **ERPNext, People (Person records)**, see §4 |
 | Church branches list | `src/data/branchNetwork.ts` (see §5) |
 | TELPSAM campuses | `src/app/ministries/students/page.tsx` |
 | The Lord's Academy locations | `src/app/about/education/page.tsx` |
 | Service / meeting times | `src/app/media/livestream/page.tsx` & `src/app/get-involved/plan-your-visit/page.tsx` |
-| Events, News, Sermons, Gallery, Leadership, hero slider, page banners | **ERPNext** (`tlpci.frappe.cloud`) — see §7. Built-in defaults live in `src/data/content.ts` |
-| Form submissions (Contact, Prayer, etc.) | **ERPNext → Website Submission** — see §9 |
+| Events, News, Sermons, Testimonies, Gallery, Leadership people | **ERPNext** (`new---tlpci.nvi.frappe.cloud`), see §7 |
+| Order of the Executive Council on the Leadership page | `src/lib/content-source.ts` (`COUNCIL_ROLE_ORDER`), see §7 |
+| Form submissions (Contact, Prayer, Visit, Testimony, Newsletter) | **ERPNext**, see §9 |
 | Social-share preview image | `public/og-image.jpg` |
 | Site icon (favicon) & logo | `public/tlpci-logo.png` |
 | All photos | `public/images/…` (see §2 and `public/images/README.md`) |
@@ -144,24 +155,28 @@ golden loop. Don't touch the punctuation or code around it.
 
 ---
 
-## 4. Updating the Ministers / Pastors list  ✅ self-serve
+## 4. Updating the Ministers / Pastors list (ERPNext)
 
-This one is designed for you — no code needed.
+The "Our Ministers" page, minister profiles and the Executive Council on the
+Leadership page are all built from **Person** records in ERPNext. The Excel file
+is no longer what the site reads.
 
-1. Open **`TLPCI Ministers Database.xlsx`** in the project folder.
-2. Go to the **"Data"** tab (not the pretty "Ministers" tab).
-3. Add, edit, or reorder rows. Columns: **Category, Name, Branch, Ordained,
-   Office**. Categories: `Apostle, Prophet, Senior Pastor, Reverend, Pastor, Elder`.
-4. Save the file.
-5. In PowerShell, run:
-   ```
-   npm run sync:ministers
-   ```
-   This reads the Excel and rebuilds the site's minister data automatically.
-6. Do the golden loop (§0) to publish.
+**To add or edit one minister:**
 
-The "Our Ministers" page (under **Churches**) updates to match. Rows also drive
-the ordering, so put people in the order you want them shown.
+1. In ERPNext open **People > Person** and find (or add) the person.
+2. Set **Location** to their branch (a Church Location record).
+3. Under **Positions**, add a row: **Position** is their rank (Apostle, Prophet,
+   Senior Pastor, Reverend, Pastor, Elder, Deacon...), plus a **Start Date**.
+   Put their office (for example "Director of Missions") in **Notes**.
+4. Tick **Is Executive** if they sit on the Executive Council.
+5. Save. The site updates within about 5 minutes.
+
+**Bulk load from Excel (rare).** `TLPCI Ministers Database.xlsx` (Data tab:
+Category, Name, Branch, Ordained, Office) can still be pushed into ERPNext with
+`npm run import:ministers` (add `DRY_RUN=1` first to preview). That script
+updates existing records, so it must be run with **Administrator** keys in a
+local `.env.local`, not with the restricted website keys. Do not put Administrator
+keys in Vercel. `npm run sync:ministers` is the old method and is no longer used.
 
 ---
 
@@ -178,8 +193,9 @@ add its name to that area's list. Example:
 Save, then do the golden loop. The "Find a Church" search updates automatically,
 and the branch count on the About page reflects the new total.
 
-> If you'd rather manage branches from a spreadsheet like the ministers list, I
-> can set up the same Excel-sync workflow for branches — just ask.
+> The branch list on Find a Church and the Plan Your Visit dropdown comes from
+> this file, not from ERPNext. (ERPNext Church Location records are only used to
+> show each minister's branch.)
 
 ---
 
@@ -191,63 +207,82 @@ covers). Add, edit, or remove entries, save, and do the golden loop.
 
 ---
 
-## 7. ERPNext — the content admin (Events, News, Sermons, Gallery & more)
+## 7. ERPNext: the content admin
 
-Most of the site's changeable content is now managed in **ERPNext** at
-`https://tlpci.frappe.cloud`, so a team member can update it without touching
-code. Log in, open the relevant list, add or edit a record, tick **Is
-Published**, and Save. The website picks it up within about **5 minutes** — no
-push or rebuild needed.
+Most changeable content is managed in ERPNext at
+`https://new---tlpci.nvi.frappe.cloud`, so a team member can update it without
+touching code. Log in, open the list, add or edit a record, tick **Publish**,
+and Save. The site picks it up within about **5 minutes**.
 
-### What ERPNext controls (the DocTypes)
+### What ERPNext controls
 
-| DocType | Drives on the site |
-|---|---|
-| **Web Event** | Events. Leave **Ministry** blank → shows on the homepage + Events page. Set **Ministry** → shows on that ministry's page instead. No poster uploaded → shows the logo placeholder. |
-| **Web News** | News page + homepage "Latest News" + full article pages |
-| **Sermon** | Sermons page + homepage sermons |
-| **Gallery Album** | Gallery page + each ministry's photo grid (photos = the album's **Attachments**; tag with **Ministry**) |
-| **Ministry Page** | Each ministry's hero image |
-| **Ministry Leader** | The leaders shown on each ministry page (name, role, photo) |
-| **Hero Slide** | Homepage hero slider (ordered by Display Order) |
-| **Home Settings** | Testimonies background + the advertisement/Lord's Hour banner |
-| **Page Banner** | The top banner photo on interior pages |
-| **Executive Committee** | Leadership page (General Overseer, Council, Past Overseers) |
-| **Website Submission** | Form submissions inbox (see §9) |
+| Where in ERPNext | Drives on the site | Shows only when |
+|---|---|---|
+| **Function** (Ministries) | Events page and homepage "Upcoming Events" | **Publish** is ticked; leave "Is AD" unticked |
+| **Sermon** | Sermons page and homepage | **Publish** is ticked |
+| **Blog Post** | Latest News page and homepage | **Published** is ticked |
+| **Testimonies** | Testimonies page. Visitor submissions arrive unpublished | **Approved** and **Publish** both ticked |
+| **Church Gallery Category** | Gallery page (photos are the record's attachments) | the record exists |
+| **Person** | Our Ministers, minister pages, Executive Council | see §4 |
+| **Prayer Request, Feedback, Visitation Log, Subscribers** | Nothing. These are inboxes for form submissions | n/a |
 
-### The golden rule of ERPNext content: nothing ever goes blank
+### Empty sections
 
-Every one of these is a **fallback, not a hard replacement**. If a record is
-missing or an image field is empty, the site keeps showing the built-in
-default (the current photo or the sample text). So you can move content into
-ERPNext gradually and nothing breaks in the meantime. Only records with **Is
-Published** ticked appear on the site.
+When ERPNext has no published sermons, events or news, the site shows a plain
+"coming soon" message. It does **not** show invented sample content.
+
+### Leadership page
+
+- **General Overseer and Executive Council** come from Person records with
+  **Is Executive** ticked. A person's **Position** (their title, for example
+  Apostle) forms their name prefix, and **Notes** on the position holds their
+  office (for example "General Secretary"). "Council Member" is a seat, not a
+  title, so it is not printed before a name.
+- **Order** is set in code, not in ERPNext: General Secretary, Director of
+  Missions, Operations, Finance, Christian Education, Development Projects, the
+  two Pastors' Reps (Apostle before Reverend), then Council Members. To change
+  it, edit `COUNCIL_ROLE_ORDER` and `COUNCIL_MEMBER_NAME_ORDER` in
+  `src/lib/content-source.ts`.
+- **Past General Overseers** and the General Overseer's biography are built-in
+  text. (The "Executive Committee" doctype that could override them does not
+  exist on this ERPNext site.)
+
+### Built-in for now
+
+These doctypes do not exist on this ERPNext site yet, so the matching sections
+use built-in content: hero slider (Hero Slide), page banner photos (Page Banner),
+homepage background settings (Home Settings), and ministry heroes/leaders.
+Asking a developer to add them restores editing from ERPNext.
 
 ### The two ERPNext users (keep these straight)
 
-- **Website Reader** — read-only, used by the site to *display* content. Its API
-  key/secret live in Vercel as `ERPNEXT_URL`, `ERPNEXT_API_KEY`,
-  `ERPNEXT_API_SECRET`.
-- **Website Writer** — create-only, used by the contact/prayer/etc. forms to
-  *save* submissions. Its keys live in Vercel as `ERPNEXT_WRITE_API_KEY`,
-  `ERPNEXT_WRITE_API_SECRET`.
+- **website-reader@tlpci.org** (role *Website Reader*): read-only, used by the
+  site to *display* content. Its key and secret live in Vercel as `ERPNEXT_URL`,
+  `ERPNEXT_API_KEY`, `ERPNEXT_API_SECRET`.
+- **website-writer@tlpci.org** (role *Website Writer*): create-only, used by the
+  forms to *save* submissions. Its keys live in Vercel as
+  `ERPNEXT_WRITE_API_KEY`, `ERPNEXT_WRITE_API_SECRET`.
+
+If a new section stays empty or a form stops saving after you add a doctype,
+the reader or writer probably lacks permission on it: in ERPNext add a
+permission rule for that role on the doctype (Read for the reader, Create for the
+writer).
 
 **Never put these keys in the code or share them in chat.** They go only in
-Vercel → Settings → Environment Variables (and a local `.env.local` for
-testing — see `.env.local.example`). If a key is ever exposed, regenerate it on
-that ERPNext user and update the env var.
+Vercel, Settings, Environment Variables (and a local `.env.local` for testing,
+see `.env.local.example`). If a key is ever exposed, regenerate it on that user
+(User > Settings > API Access > Generate Keys) and update the env var.
 
-### Image sizes (shown as hints on each ERPNext field)
+### Image sizes
 
-Event poster square 1080×1080; News/Sermon/Hero/Page banners landscape 16:9
-(~1600–1920 wide); Gallery cover ~1200×900; Leadership portraits ~800×1000.
-Keep files under ~1–2 MB so pages stay fast.
+Event poster square 1080x1080; News and Sermon images landscape 16:9 (about
+1600 to 1920 wide); Gallery cover about 1200x900; Leadership portraits about
+800x1000. Keep files under 1 to 2 MB so pages stay fast.
 
 ### Still in code (not ERPNext), by design
 
-Ministers list (Excel — §4), branches (§5), TELPSAM campuses (§6), and
-devotionals/verses (§8). These are either self-serve already or must never
-depend on someone posting.
+Branches (§5), TELPSAM campuses (§6), devotionals and verses (§8), the order
+of the Executive Council, and service times.
 
 ---
 
@@ -265,22 +300,30 @@ golden loop.
 
 ---
 
-## 9. Forms & the submissions inbox
+## 9. Forms and where they land
 
-The Contact, Prayer Request, Plan-a-Visit, Volunteer, and Newsletter forms all
-save into ERPNext as **Website Submission** records — one inbox for everything.
-Open the **Website Submission** list in ERPNext to read them; filter by **Form
-Type** (Contact / Prayer Request / Volunteer / Plan a Visit / Newsletter).
-Prayer requests carry a **Confidential** flag.
+Each form saves a record in ERPNext using the **Website Writer** key. Open the
+list in ERPNext to read what people sent.
 
-How it works: a form posts to a small endpoint on the site (`/api/submit`),
-which creates the record using the **Website Writer** key (§7). A honeypot and
-rate limit block spam; email and phone are validated. To get an email alert on
-each submission, set up a **Notification** in ERPNext on the Website Submission
-DocType.
+| Form on the site | Lands in ERPNext as |
+|---|---|
+| Contact | **Feedback** |
+| Prayer Request | **Prayer Request** (can be marked confidential) |
+| Plan Your Visit | **Visitation Log** (linked to the Person if the phone number matches) |
+| Share a Testimony | **Testimonies**, unpublished until you approve it |
+| Event sign-up | **Function Sign-Up** (plus a Person record) |
+| Newsletter | **Subscribers** and **Email Group Member** |
 
-If the write keys aren't set, forms still show the thank-you screen but don't
-store anything — so nothing breaks before the keys are added.
+A honeypot and a rate limit block spam; email and phone are validated. ERPNext on
+this site has no outgoing email set up, so it does not email anyone when a form
+arrives. Check the lists, or add an ERPNext Notification once an email account is
+configured.
+
+If the write keys are missing, forms still show the thank-you screen but store
+nothing, so test a form after any change to keys.
+
+**Test records.** Delete any test submission afterwards (Actions > Delete in the
+list). Use an obviously fake email such as `test@example.com`.
 
 **Giving is hidden for now.** The Give page and its menu/footer links are
 removed, and `/get-involved/give` redirects away. To enable online giving later,
@@ -304,14 +347,13 @@ to it (a mismatched name makes that section fall back to the built-in default).
 
 ## Launch checklist (one-time)
 
-- [ ] `npm install` locally, then `npm run build` to confirm it compiles
-- [ ] Set the ERPNext env vars in Vercel: `ERPNEXT_URL`, `ERPNEXT_API_KEY`,
-      `ERPNEXT_API_SECRET`, `ERPNEXT_WRITE_API_KEY`, `ERPNEXT_WRITE_API_SECRET`
-- [ ] Confirm the **File** DocType is readable by Website Reader (for gallery photos)
-- [ ] Create one published Web Event to confirm live content flows
-- [ ] (Optional) Add an ERPNext Notification to email the team on new submissions
+- [x] ERPNext env vars set in Vercel with the restricted Website Reader and Writer keys (not Administrator)
+- [x] Test sermons, news, testimonies, events and gallery removed from ERPNext
+- [x] Each form tested once and the test records deleted
+- [ ] Add real sermons, events, news, testimonies and gallery photos in ERPNext
+- [ ] Test the event sign-up form once a real event exists
 - [ ] Set `SITE_URL` in `src/lib/constants.ts` to your real domain
-- [ ] Add your domain in Vercel → Settings → Domains
-- [ ] Add real photos (upload in ERPNext, or send to me for in-code slots)
-- [ ] Footer social icons → your real Facebook/YouTube/etc. links
-- [ ] Provide remaining Lord's Academy locations & Deacons leader names
+- [ ] Add your domain in Vercel, Settings, Domains
+- [ ] Footer social icons: your real Facebook/YouTube/etc. links
+- [ ] Provide remaining Lord's Academy locations and Deacons leader names
+- [ ] Archive the old `Church-website` repo and its Vercel project once everything runs from TLPCI

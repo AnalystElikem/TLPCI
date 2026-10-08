@@ -6,7 +6,7 @@
 //
 // Env vars (set in .env.local locally and in Vercel → Settings → Environment
 // Variables). See .env.local.example.
-//   ERPNEXT_URL         e.g. https://tlpci.frappe.cloud
+//   ERPNEXT_URL         e.g. https://new---tlpci.nvi.frappe.cloud
 //   ERPNEXT_API_KEY     the website user's API key
 //   ERPNEXT_API_SECRET  the website user's API secret
 
