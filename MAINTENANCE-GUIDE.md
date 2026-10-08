@@ -11,8 +11,9 @@ how to make the change go live. No deep coding knowledge required for most of it
 
 ## 0. The two ways a change goes live
 
-**A. Content in ERPNext** (people, sermons, news, events, testimonies, gallery,
-prayer requests and form inboxes). Log in, add or edit the record, tick
+**A. Content in ERPNext** (homepage slides and welcome text, every page's headline
+and banner photo, people, sermons, news, events, testimonies, gallery, prayer
+requests and form inboxes). Log in, add or edit the record, tick
 **Publish**, Save. The site picks it up within about **5 minutes**. No push, no
 rebuild. See §7.
 
@@ -43,9 +44,10 @@ rebuild. See §7.
 | What you want to change | File / location |
 |---|---|
 | Church name, motto, address, phone, email, **website domain** | `src/lib/constants.ts` |
-| Homepage hero slides (3 rotating messages + images) | `src/components/home/HeroSection.tsx` |
+| Homepage hero slides (3 rotating messages + images) | **ERPNext**, [Home page](https://new---tlpci.nvi.frappe.cloud/desk/web-page/home), blocks `carousel-1` to `carousel-3`. See §7 |
 | The Lord's Hour banner (homepage) | image: `public/images/home/lords-hour.jpg` |
-| General Overseer's welcome message | `src/components/home/PastorsWelcome.tsx` |
+| General Overseer's welcome message (homepage) | **ERPNext**, [Home page](https://new---tlpci.nvi.frappe.cloud/desk/web-page/home), block `welcome`. See §7 |
+| Headline, intro text and banner photo of any other page | **ERPNext**, [Web Pages](https://new---tlpci.nvi.frappe.cloud/desk/web-page), block `hero`. See §7 |
 | Verse-of-the-day list | `src/data/verses.ts` |
 | Daily devotionals | `src/data/devotions.ts` |
 | "Prayers for Souls" slider (missions) | `src/components/ministries/PrayersForSouls.tsx` |
@@ -139,10 +141,8 @@ golden loop. Don't touch the punctuation or code around it.
 
 - **Church name, motto, address, phone, email, and website domain** →
   `src/lib/constants.ts`. (After you have your real domain, set `SITE_URL` here.)
-- **Homepage hero slide text** → `src/components/home/HeroSection.tsx` (the
-  `slides` list — each has a `title` and `text`).
-- **General Overseer's welcome message** →
-  `src/components/home/PastorsWelcome.tsx` (the `message` paragraphs).
+- **Homepage hero slide text and the General Overseer's welcome message** →
+  now in ERPNext, not in code. See §7 "Page text and banners".
 - **Service/meeting times** → `src/app/media/livestream/page.tsx` and
   `src/app/get-involved/plan-your-visit/page.tsx`.
 - **The Lord's Academy locations** → `src/app/about/education/page.tsx`
@@ -226,6 +226,94 @@ and Save. The site picks it up within about **5 minutes**.
 | **Person** | Our Ministers, minister pages, Executive Council | see §4 |
 | **Prayer Request, Feedback, Visitation Log, Subscribers** | Nothing. These are inboxes for form submissions | n/a |
 
+### Page text and banners (Web Pages)
+
+The headline, intro text and banner photo of the homepage and every interior page
+come from an ERPNext **Web Page**. List of all pages: [https://new---tlpci.nvi.frappe.cloud/desk/web-page](https://new---tlpci.nvi.frappe.cloud/desk/web-page).
+Open a page, scroll to **Page Blocks**, open the block row, change its fields,
+and Save. The site updates in about 5 minutes.
+
+**The golden rule for blocks:** a block field you leave **blank** falls back to
+the built-in text or photo in the code, so blank is safe. A field you fill always
+wins over the code. If a change does not show up on the site, check the block
+first, because a leftover image there beats anything in the code.
+
+**Homepage** ([open it](https://new---tlpci.nvi.frappe.cloud/desk/web-page/home)) has five blocks:
+
+| Block (Section ID) | What it controls | Fields |
+|---|---|---|
+| `carousel-1`, `carousel-2`, `carousel-3` | The three rotating slides at the top | Title, Subtitle (the line under it), Image, CTA label (button text), CTA URL (where the button goes) |
+| `welcome` | The General Overseer's welcome on the homepage | Eyebrow (small heading), Title, Body (paragraphs separated by a blank line). The photo is the General Overseer's Person record, not this block |
+| `testimonies` | Heading of the testimonies strip | Title |
+
+Slide photos: use a wide image, at least 1920 pixels across and about 2.3 times
+wider than tall (for example 2400 x 1040), under 1 to 2 MB. Text sits on the
+lower left, so keep faces and key details away from that corner. A portrait photo
+needs a wide background built around it first; ask me and I will make it. If
+**Image** is blank, the slide shows the built-in photo for that slot (slot 1 is
+the Women's Convention 2026 photo in the repo, slots 2 and 3 are stock photos).
+Slides 2 and 3 currently hold placeholder images, so they need real photos.
+
+**Interior pages** each have one `hero` block with **Eyebrow**, **Title**,
+**Subtitle** and **Image** (the banner photo). Blank Image means the built-in
+banner. One page also has an `origin` block (Our Story).
+
+| Page on the site | Open the Web Page in ERPNext |
+|---|---|
+| Our Story | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/our-story](https://new---tlpci.nvi.frappe.cloud/desk/web-page/our-story) (blocks `hero`, `origin`) |
+| What We Believe | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/what-we-believe](https://new---tlpci.nvi.frappe.cloud/desk/web-page/what-we-believe) |
+| Leadership | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/leadership](https://new---tlpci.nvi.frappe.cloud/desk/web-page/leadership) |
+| Education | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/education](https://new---tlpci.nvi.frappe.cloud/desk/web-page/education) |
+| Healing Station | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/healing-station](https://new---tlpci.nvi.frappe.cloud/desk/web-page/healing-station) |
+| Find a Church | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/find-a-church](https://new---tlpci.nvi.frappe.cloud/desk/web-page/find-a-church) |
+| Our Ministers | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/our-ministers](https://new---tlpci.nvi.frappe.cloud/desk/web-page/our-ministers) |
+| Contact | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/contact](https://new---tlpci.nvi.frappe.cloud/desk/web-page/contact) |
+| Membership | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/membership](https://new---tlpci.nvi.frappe.cloud/desk/web-page/membership) |
+| Plan Your Visit | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/plan-your-visit](https://new---tlpci.nvi.frappe.cloud/desk/web-page/plan-your-visit) |
+| Prayer Request | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/prayer-request](https://new---tlpci.nvi.frappe.cloud/desk/web-page/prayer-request) |
+| Volunteer | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/volunteer](https://new---tlpci.nvi.frappe.cloud/desk/web-page/volunteer) |
+| Sermons | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/sermons](https://new---tlpci.nvi.frappe.cloud/desk/web-page/sermons) |
+| Livestream | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/livestream](https://new---tlpci.nvi.frappe.cloud/desk/web-page/livestream) |
+| Gallery | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/gallery](https://new---tlpci.nvi.frappe.cloud/desk/web-page/gallery) |
+| Testimonies | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/testimonies](https://new---tlpci.nvi.frappe.cloud/desk/web-page/testimonies) |
+| Devotions | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/devotions](https://new---tlpci.nvi.frappe.cloud/desk/web-page/devotions) |
+| Latest News | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/latest-news](https://new---tlpci.nvi.frappe.cloud/desk/web-page/latest-news) |
+| Events | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/events](https://new---tlpci.nvi.frappe.cloud/desk/web-page/events) |
+| Men's Ministry | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/mens-ministry](https://new---tlpci.nvi.frappe.cloud/desk/web-page/mens-ministry) |
+| Women's Ministry | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/womens-ministry](https://new---tlpci.nvi.frappe.cloud/desk/web-page/womens-ministry) |
+| Youth Ministry | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/youth-ministry](https://new---tlpci.nvi.frappe.cloud/desk/web-page/youth-ministry) |
+| Students Ministry | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/students-ministry](https://new---tlpci.nvi.frappe.cloud/desk/web-page/students-ministry) |
+| Children's Ministry | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/childrens-ministry](https://new---tlpci.nvi.frappe.cloud/desk/web-page/childrens-ministry) |
+| Missions | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/missions](https://new---tlpci.nvi.frappe.cloud/desk/web-page/missions) |
+| Music Ministry | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/music-ministry](https://new---tlpci.nvi.frappe.cloud/desk/web-page/music-ministry) |
+| Deacons & Deaconesses | [https://new---tlpci.nvi.frappe.cloud/desk/web-page/deacons-deaconesses](https://new---tlpci.nvi.frappe.cloud/desk/web-page/deacons-deaconesses) |
+
+Do not rename, delete or unpublish these pages, and do not change a block's
+**Section ID** (`hero`, `carousel-1`, `welcome`, and so on). The site finds each
+block by that ID, so a changed ID makes the block stop showing. To add a fourth
+homepage slide, add a block with template **TLPCI Hero Slide** and Section ID
+`carousel-4` (a fourth slide must have an Image, since there is no built-in photo
+for it).
+
+Known leftover: the What We Believe banner currently points at a placeholder
+image (a mug pattern). Replace or clear it.
+
+### Quick links: where to add or edit things
+
+| To do this | Open |
+|---|---|
+| Add an event | [Function list](https://new---tlpci.nvi.frappe.cloud/desk/function) (tick Publish; leave "Is AD" off) |
+| Add a Lord's Hour or ad banner | [Function list](https://new---tlpci.nvi.frappe.cloud/desk/function) (tick "Is AD") |
+| Add a sermon | [Sermon list](https://new---tlpci.nvi.frappe.cloud/desk/sermon) |
+| Add a news story | [Blog Post list](https://new---tlpci.nvi.frappe.cloud/desk/blog-post) |
+| Approve a testimony | [Testimonies list](https://new---tlpci.nvi.frappe.cloud/desk/testimonies) (tick Approved and Publish) |
+| Add gallery photos | [Church Gallery Category list](https://new---tlpci.nvi.frappe.cloud/desk/church-gallery-category) |
+| Add or edit a minister or leader | [Person list](https://new---tlpci.nvi.frappe.cloud/desk/person) (see §4 and "Leadership page") |
+| Ministry banner photo, leaders and gallery | [Ministry list](https://new---tlpci.nvi.frappe.cloud/desk/ministry) |
+| Branch locations used on minister pages | [Church Location list](https://new---tlpci.nvi.frappe.cloud/desk/church-location) |
+| Read form submissions | [Feedback](https://new---tlpci.nvi.frappe.cloud/desk/feedback), [Prayer Request](https://new---tlpci.nvi.frappe.cloud/desk/prayer-request), [Visitation Log](https://new---tlpci.nvi.frappe.cloud/desk/visitation-log), [Subscribers](https://new---tlpci.nvi.frappe.cloud/desk/subscribers), [Event sign-ups](https://new---tlpci.nvi.frappe.cloud/desk/function-sign-up) |
+| Check or regenerate the website's API keys | [website-reader](https://new---tlpci.nvi.frappe.cloud/desk/user/website-reader@tlpci.org), [website-writer](https://new---tlpci.nvi.frappe.cloud/desk/user/website-writer@tlpci.org) |
+
 ### Empty sections
 
 When ERPNext has no published sermons, events or news, the site shows a plain
@@ -249,10 +337,11 @@ When ERPNext has no published sermons, events or news, the site shows a plain
 
 ### Built-in for now
 
-These doctypes do not exist on this ERPNext site yet, so the matching sections
-use built-in content: hero slider (Hero Slide), page banner photos (Page Banner),
-homepage background settings (Home Settings), and ministry heroes/leaders.
-Asking a developer to add them restores editing from ERPNext.
+These doctypes do not exist on this ERPNext site: Hero Slide, Page Banner, Home
+Settings and Executive Committee. They are not needed, because slides and banners
+are edited in Web Pages (above). The Lord's Hour and testimonies background
+images, past General Overseers and the General Overseer's biography still use
+built-in content.
 
 ### The two ERPNext users (keep these straight)
 
