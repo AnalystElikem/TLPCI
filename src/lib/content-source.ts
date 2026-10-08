@@ -1490,8 +1490,8 @@ const COUNCIL_ROLE_ORDER: RegExp[] = [
   /general\s+secretary/i,
   /director\s+of\s+missions/i,
   /director\s+of\s+operations/i,
-  /christian\s+education/i,
   /director\s+of\s+finance/i,
+  /christian\s+education/i,
   /(development\s+)?projects/i,
   /pastors?'?s?\s+rep/i,
   /council\s+member/i,
@@ -1499,6 +1499,10 @@ const COUNCIL_ROLE_ORDER: RegExp[] = [
 
 // Council members are shown alternating woman, man, woman, man.
 const COUNCIL_MEMBER_NAME_ORDER = ["attah", "agbaxode", "kelvis", "obeng"];
+
+function councilTitleOf(positionType: string): string {
+  return /^council\s+member$/i.test(positionType.trim()) ? "" : positionType;
+}
 
 function councilTitleRank(name: string): number {
   const n = name.trim().toLowerCase();
@@ -1568,7 +1572,8 @@ export const getLeadership = cache(async function getLeadership(): Promise<Leade
         .map((record) => ({
           name: personDisplayName(
             record.full_name!.trim(),
-            primaryMinisterType(record.positions)
+            // "Council Member" is a seat, not a title — don't print it as one.
+            councilTitleOf(primaryMinisterType(record.positions))
           ),
           role: personExecutiveRoleOf(record),
           image: absoluteFileUrl(record.photo) ?? "",
