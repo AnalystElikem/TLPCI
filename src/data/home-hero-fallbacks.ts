@@ -12,8 +12,7 @@ export const HOME_HERO_FALLBACKS = [
   {
     title: "2026 Theme",
     text: "Empowered to Transform (Acts 1:8)",
-    image:
-      "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1800&q=80",
+    image: "/images/home/hero-theme-2026.jpg",
     ctaLabel: "Find Out More",
     ctaHref: "/about/our-story",
   },

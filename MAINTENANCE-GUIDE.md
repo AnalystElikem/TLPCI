@@ -254,8 +254,8 @@ dialog.** With it on, ERPNext shrinks the picture (a 2400 pixel image came back
 lower left, so keep faces and key details away from that corner. A portrait photo
 needs a wide background built around it first; ask me and I will make it. If
 **Image** is blank, the slide shows the built-in photo for that slot (slot 1 is
-the Women's Convention 2026 photo in the repo, slots 2 and 3 are stock photos).
-Slides 2 and 3 currently hold placeholder images, so they need real photos.
+the Women's Convention 2026 photo in the repo, slot 2 is the 2026 theme design (a flame with rings spreading outward, no text), slot 3 is a stock photo).
+Slide 3 currently holds a placeholder image, so it needs a real photo.
 
 **Phones show a different picture for slide 1.** Under 768 pixels wide, slide 1 shows
 a close-up of the First Lady instead of the collage. That phone picture lives in the
