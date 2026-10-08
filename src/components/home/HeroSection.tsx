@@ -39,7 +39,7 @@ export default function HeroSection({ slides: slidesProp }: { slides?: Slide[] }
   }, [slides.length]);
 
   return (
-    <section className="relative h-[420px] w-full overflow-hidden md:h-[540px] lg:h-[620px]">
+    <section className="relative h-[420px] w-full overflow-hidden md:h-[380px] lg:h-[clamp(480px,33.33vw,700px)]">
       <h1 className="sr-only">{CHURCH_NAME}</h1>
 
       {slides.map((slide, i) => (

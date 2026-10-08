@@ -246,8 +246,11 @@ first, because a leftover image there beats anything in the code.
 | `welcome` | The General Overseer's welcome on the homepage | Eyebrow (small heading), Title, Body (paragraphs separated by a blank line). The photo is the General Overseer's Person record, not this block |
 | `testimonies` | Heading of the testimonies strip | Title |
 
-Slide photos: use a wide image, at least 1920 pixels across and about 2.3 times
-wider than tall (for example 2400 x 1040), under 1 to 2 MB. Text sits on the
+Slide photos: use a wide image exactly 3 times wider than tall, ideally 3840 x 1280
+(UHD) and under 2 MB. The slider's height follows that shape on big screens, so a
+3:1 image is shown in full (a taller image gets its top and bottom trimmed). **When you upload in ERPNext, untick "Optimize" in the upload
+dialog.** With it on, ERPNext shrinks the picture (a 2400 pixel image came back
+1024 pixels wide and soft). Text sits on the
 lower left, so keep faces and key details away from that corner. A portrait photo
 needs a wide background built around it first; ask me and I will make it. If
 **Image** is blank, the slide shows the built-in photo for that slot (slot 1 is
