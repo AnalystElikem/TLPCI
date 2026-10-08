@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CHURCH_NAME } from "@/lib/constants";
@@ -11,6 +11,8 @@ type Slide = {
   title: string;
   text: string;
   image: string;
+  /** Optional picture used on phones (under 768px wide). */
+  mobileImage?: string;
   imagePosition?: string;
   ctaLabel?: string;
   ctaHref?: string;
@@ -19,6 +21,44 @@ type Slide = {
 const DEFAULT_SLIDES: Slide[] = HOME_HERO_FALLBACKS.map((slide) => ({ ...slide }));
 
 const SLIDE_INTERVAL = 6000;
+
+/** Slide photo. Phones get their own crop when the slide has a mobileImage. */
+function SlideImage({ slide, priority }: { slide: Slide; priority: boolean }) {
+  const style = slide.imagePosition
+    ? { objectPosition: slide.imagePosition }
+    : undefined;
+
+  if (!slide.mobileImage) {
+    return (
+      <Image
+        src={slide.image}
+        alt=""
+        fill
+        className="object-cover"
+        style={style}
+        sizes="100vw"
+        priority={priority}
+      />
+    );
+  }
+
+  const common = { alt: "", fill: true, sizes: "100vw", priority } as const;
+  const { props: desktop } = getImageProps({ ...common, src: slide.image });
+  const { props: mobile } = getImageProps({ ...common, src: slide.mobileImage });
+
+  return (
+    <picture>
+      <source media="(min-width: 768px)" srcSet={desktop.srcSet} sizes="100vw" />
+      <source media="(max-width: 767px)" srcSet={mobile.srcSet} sizes="100vw" />
+      <img
+        {...mobile}
+        alt=""
+        className="object-cover object-center max-md:object-[50%_28%]"
+        style={{ ...mobile.style, ...style }}
+      />
+    </picture>
+  );
+}
 
 export default function HeroSection({ slides: slidesProp }: { slides?: Slide[] }) {
   const slides = slidesProp && slidesProp.length ? slidesProp : DEFAULT_SLIDES;
@@ -50,15 +90,7 @@ export default function HeroSection({ slides: slidesProp }: { slides?: Slide[] }
             i === active ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         >
-          <Image
-            src={slide.image}
-            alt=""
-            fill
-            className="object-cover"
-            style={slide.imagePosition ? { objectPosition: slide.imagePosition } : undefined}
-            sizes="100vw"
-            priority={i === 0}
-          />
+          <SlideImage slide={slide} priority={i === 0} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
 
           <div className="absolute inset-x-0 bottom-0">

@@ -257,6 +257,12 @@ needs a wide background built around it first; ask me and I will make it. If
 the Women's Convention 2026 photo in the repo, slots 2 and 3 are stock photos).
 Slides 2 and 3 currently hold placeholder images, so they need real photos.
 
+**Phones show a different picture for slide 1.** Under 768 pixels wide, slide 1 shows
+a close-up of the First Lady instead of the collage. That phone picture lives in the
+repo (`public/images/home/hero-first-lady-mobile.jpg`), not in ERPNext, so changing
+slide 1's Image in ERPNext changes laptops and tablets only. To change the phone
+picture, ask me and I will swap the file (a square image, about 900 x 900, works best).
+
 **Interior pages** each have one `hero` block with **Eyebrow**, **Title**,
 **Subtitle** and **Image** (the banner photo). Blank Image means the built-in
 banner. One page also has an `origin` block (Our Story).

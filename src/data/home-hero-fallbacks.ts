@@ -4,6 +4,8 @@ export const HOME_HERO_FALLBACKS = [
     title: "Welcome to TLPCI",
     text: "You are not here by chance — come and be part of a family where faith grows and lives are transformed.",
     image: "/images/home/hero-womens-convention-2026.jpg",
+    // Phones show the first lady only, cropped from the same photo.
+    mobileImage: "/images/home/hero-first-lady-mobile.jpg",
     ctaLabel: "Find Out More",
     ctaHref: "/about/our-story",
   },

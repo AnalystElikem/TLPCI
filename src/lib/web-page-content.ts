@@ -84,6 +84,7 @@ export type CmsHeroSlide = {
   title: string;
   text: string;
   image: string;
+  mobileImage?: string;
   ctaLabel: string;
   ctaHref: string;
 };
@@ -98,10 +99,12 @@ function mapSectionToHeroSlide(
   const image =
     webImage(section.values, "image") ?? fallback?.image ?? "";
   if (!image) return null;
+  const fallbackMobile = (fallback as { mobileImage?: string } | undefined)?.mobileImage;
   return {
     title,
     text,
     image,
+    mobileImage: webImage(section.values, "mobile_image") ?? fallbackMobile,
     ctaLabel: webText(section.values, "cta_label", fallback?.ctaLabel ?? "Find Out More"),
     ctaHref: webText(section.values, "cta_url", fallback?.ctaHref ?? "/about/our-story"),
   };

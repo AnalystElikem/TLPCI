@@ -1112,6 +1112,7 @@ export type HeroSlide = {
   title: string;
   text: string;
   image: string;
+  mobileImage?: string;
   ctaLabel?: string;
   ctaHref?: string;
 };
