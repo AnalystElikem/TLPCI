@@ -3,8 +3,9 @@ export const HOME_HERO_FALLBACKS = [
   {
     title: "Welcome to TLPCI",
     text: "You are not here by chance — come and be part of a family where faith grows and lives are transformed.",
-    image:
-      "https://plus.unsplash.com/premium_photo-1661491926923-6c5c75e00ce7?w=1800&auto=format&fit=crop&q=80",
+    image: "/images/home/hero-womens-convention-2026.jpg",
+    // Keeps the photo centred when the banner is cropped on phones.
+    imagePosition: "64% 35%",
     ctaLabel: "Find Out More",
     ctaHref: "/about/our-story",
   },

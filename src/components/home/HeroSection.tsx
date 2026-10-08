@@ -11,6 +11,7 @@ type Slide = {
   title: string;
   text: string;
   image: string;
+  imagePosition?: string;
   ctaLabel?: string;
   ctaHref?: string;
 };
@@ -54,6 +55,7 @@ export default function HeroSection({ slides: slidesProp }: { slides?: Slide[] }
             alt=""
             fill
             className="object-cover"
+            style={slide.imagePosition ? { objectPosition: slide.imagePosition } : undefined}
             sizes="100vw"
             priority={i === 0}
           />
