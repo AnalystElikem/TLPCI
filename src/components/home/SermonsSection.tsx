@@ -2,17 +2,21 @@ import Link from "next/link";
 import ContentImage from "@/components/ui/ContentImage";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SermonMediaActions from "@/components/sermons/SermonMediaActions";
-import { sermons as fallbackSermons } from "@/data/content";
 import { sermonPath, type SermonItem } from "@/lib/content-source";
 
 export default function SermonsSection({ sermons }: { sermons?: SermonItem[] }) {
-  const list = sermons && sermons.length ? sermons : fallbackSermons;
-  const featured = list.slice(0, 3);
+  const featured = (sermons ?? []).slice(0, 3);
 
   return (
     <section className="bg-white py-16 lg:py-24">
       <div className="mx-auto max-w-[1400px] px-4 lg:px-8">
         <SectionHeading title="Sermons" />
+
+        {featured.length === 0 && (
+          <p className="py-8 text-center text-text-muted">
+            New messages are coming soon. Please check back shortly.
+          </p>
+        )}
 
         <div className="grid gap-6 md:grid-cols-3">
           {featured.map((sermon) => (

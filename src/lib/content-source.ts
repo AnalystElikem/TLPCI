@@ -8,8 +8,6 @@
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import {
-  events as fallbackEvents,
-  sermons as fallbackSermons,
   generalOverseer as fallbackGO,
   executiveCouncil as fallbackCouncil,
   pastOverseers as fallbackPast,
@@ -428,7 +426,7 @@ function mapFunction(
 /** Church-wide functions for the homepage + Events page (excludes ad poster slots). */
 export const getEvents = cache(async function getEvents(): Promise<EventItem[]> {
   const rows = await fetchPublishedFunctions();
-  if (!rows || rows.length === 0) return fallbackEvents;
+  if (!rows || rows.length === 0) return [];
 
   const eligible = withoutAdFunctions(rows);
 
@@ -561,7 +559,7 @@ export async function getMinistryBlogPosts(
 export async function getEvent(id: string): Promise<EventItem | null> {
   const rows = await fetchPublishedFunctions();
   if (!rows || rows.length === 0) {
-    return fallbackEvents.find((e) => String(e.id) === id) ?? null;
+    return null;
   }
 
   const row = rows.find((r) => String(r.name ?? "") === id);
@@ -579,7 +577,7 @@ export async function getEvent(id: string): Promise<EventItem | null> {
 /** All published functions for detail routes (excludes homepage ad poster slots). */
 export const getAllEvents = cache(async function getAllEvents(): Promise<EventItem[]> {
   const rows = await fetchPublishedFunctions();
-  if (!rows || rows.length === 0) return fallbackEvents;
+  if (!rows || rows.length === 0) return [];
 
   const eligible = withoutAdFunctions(rows);
 
@@ -1019,7 +1017,7 @@ async function mapChurchItSermonRows(
 
 export const getSermons = cache(async function getSermons(): Promise<SermonItem[]> {
   const rows = await fetchPublishedSermons();
-  if (!rows || rows.length === 0) return fallbackSermons;
+  if (!rows || rows.length === 0) return [];
 
   const churchIt = rows.some(isChurchItSermon);
   if (!churchIt) {
@@ -1039,7 +1037,7 @@ export const getSermon = cache(async function getSermon(
 ): Promise<SermonItem | null> {
   const rows = await fetchPublishedSermons();
   if (!rows?.length) {
-    return fallbackSermons.find((s) => String(s.id) === id) ?? null;
+    return null;
   }
 
   const row = rows.find((r) => String(r.name ?? "") === id);

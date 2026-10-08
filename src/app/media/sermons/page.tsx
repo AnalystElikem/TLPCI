@@ -24,6 +24,29 @@ export default async function SermonsPage() {
   ]);
   const [featured, ...rest] = sermons;
 
+  if (!featured) {
+    return (
+      <>
+        <CmsCompactHeader
+          cms={hero}
+          fallbackEyebrow="Media"
+          fallbackTitle="Sermons"
+          fallbackSubtitle="Grow through the Word — watch or listen to recent messages anytime."
+        />
+        <section className="bg-muted-surface py-20">
+          <div className="mx-auto max-w-[800px] px-4 text-center lg:px-8">
+            <p className="text-lg text-text-muted">
+              New messages are coming soon. Please check back shortly.
+            </p>
+            <Link href="/media/livestream" className="btn btn-primary mt-6 inline-block">
+              Go to Livestream
+            </Link>
+          </div>
+        </section>
+      </>
+    );
+  }
+
   return (
     <>
       <CmsCompactHeader

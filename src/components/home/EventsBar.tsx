@@ -3,13 +3,12 @@ import Link from "next/link";
 import { Clock, MapPin } from "lucide-react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { CHURCH_LOGO } from "@/lib/constants";
-import { events as fallbackEvents } from "@/data/content";
 import { eventPath, type EventItem } from "@/lib/content-source";
 
 export default function EventsBar({ events }: { events?: EventItem[] }) {
   // `events` is always provided by the homepage (may be an empty church-wide
-  // list). Only fall back to samples if the prop is entirely absent.
-  const list: EventItem[] = events ?? fallbackEvents;
+  // list). Never show invented sample events.
+  const list: EventItem[] = events ?? [];
   const featured = list.slice(0, 3);
   // Always show 3 slots on the homepage — fill any empties with a branded
   // "coming soon" placeholder until there are three real events.
