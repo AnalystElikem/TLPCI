@@ -1483,6 +1483,50 @@ function htmlToParagraphs(html?: string | null): string[] {
     .filter(Boolean);
 }
 
+// --------------------------------------------------------------- Leadership order
+// Order in which executive council members are shown on the Leadership page.
+// ERPNext Person records have no display-order field, so the order lives here.
+const COUNCIL_ROLE_ORDER: RegExp[] = [
+  /general\s+secretary/i,
+  /director\s+of\s+missions/i,
+  /director\s+of\s+operations/i,
+  /christian\s+education/i,
+  /director\s+of\s+finance/i,
+  /(development\s+)?projects/i,
+  /pastors?'?s?\s+rep/i,
+  /council\s+member/i,
+];
+
+// Council members are shown alternating woman, man, woman, man.
+const COUNCIL_MEMBER_NAME_ORDER = ["attah", "agbaxode", "kelvis", "obeng"];
+
+function councilTitleRank(name: string): number {
+  const n = name.trim().toLowerCase();
+  if (n.startsWith("apostle")) return 0;
+  if (n.startsWith("rev")) return 1;
+  return 2;
+}
+
+function councilNameRank(name: string): number {
+  const n = name.toLowerCase();
+  const i = COUNCIL_MEMBER_NAME_ORDER.findIndex((part) => n.includes(part));
+  return i === -1 ? COUNCIL_MEMBER_NAME_ORDER.length : i;
+}
+
+function sortCouncil<T extends { name: string; role: string }>(members: T[]): T[] {
+  const roleRank = (role: string) => {
+    const i = COUNCIL_ROLE_ORDER.findIndex((re) => re.test(role));
+    return i === -1 ? COUNCIL_ROLE_ORDER.length : i;
+  };
+  return [...members].sort(
+    (a, b) =>
+      roleRank(a.role) - roleRank(b.role) ||
+      councilTitleRank(a.name) - councilTitleRank(b.name) ||
+      councilNameRank(a.name) - councilNameRank(b.name) ||
+      a.name.localeCompare(b.name)
+  );
+}
+
 /**
  * Leadership for the Leadership page. Persons flagged as executive-only or
  * executive-minister in Church IT appear here. Past overseers still use
@@ -1590,7 +1634,7 @@ export const getLeadership = cache(async function getLeadership(): Promise<Leade
       }))
     : fallback.pastOverseers;
 
-  return { generalOverseer, council, pastOverseers };
+  return { generalOverseer, council: sortCouncil(council), pastOverseers };
 });
 
 // ------------------------------------------------------------------- Devotion
