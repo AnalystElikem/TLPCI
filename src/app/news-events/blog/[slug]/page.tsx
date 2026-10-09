@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { blogPostPath, getBlogPost, getBlogPosts } from "@/lib/content-source";
+import FullCover, { BlurredBackdrop } from "@/components/ui/FullCover";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -38,16 +39,7 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <>
       <section className="relative overflow-hidden bg-foreground">
-        {/* Blurred copy of the cover as a backdrop, so nothing is cropped away */}
-        <Image
-          src={item.image}
-          alt=""
-          aria-hidden
-          fill
-          className="scale-110 object-cover opacity-40 blur-2xl"
-          sizes="100vw"
-          priority
-        />
+        <BlurredBackdrop src={item.image} priority />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/40" />
         <div className="relative px-4 pb-10 pt-12 md:pb-12 md:pt-16 lg:px-8">
           <div className="mx-auto w-full max-w-[820px]">
@@ -73,24 +65,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       <section className="bg-white py-14 lg:py-20">
         <div className="mx-auto max-w-[900px] px-4 lg:px-8">
-          {/* Full cover photo, never cropped, whatever its shape */}
-          <div className="relative aspect-video w-full overflow-hidden bg-foreground shadow-md">
-            <Image
-              src={item.image}
-              alt=""
-              aria-hidden
-              fill
-              className="scale-110 object-cover opacity-50 blur-2xl"
-              sizes="(max-width: 900px) 100vw, 900px"
-            />
-            <Image
-              src={item.image}
-              alt={item.title}
-              fill
-              className="object-contain"
-              sizes="(max-width: 900px) 100vw, 900px"
-            />
-          </div>
+          <FullCover src={item.image} alt={item.title} />
         </div>
         <div className="mx-auto mt-10 max-w-[760px] px-4 lg:px-8">
           {bodyHtml ? (

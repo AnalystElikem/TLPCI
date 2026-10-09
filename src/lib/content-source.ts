@@ -14,6 +14,7 @@ import {
 } from "@/data/content";
 import {
   absoluteFileUrl,
+  absolutizeHtmlFileUrls,
   erpnextList,
   erpnextDoc,
   erpnextAttachments,
@@ -703,7 +704,7 @@ function mapBlogPostRow(
       categories.get(categoryKey) ?? formatCategoryLabel(categoryKey),
     excerpt: r.blog_intro ?? "",
     image: absoluteFileUrl(r.meta_image) ?? DEFAULT_NEWS_IMAGE,
-    body: r.content ?? "",
+    body: absolutizeHtmlFileUrls(r.content),
     blogger: bloggers.get(r.blogger ?? "") ?? r.blogger ?? "",
     route: r.route ?? "",
     featured: Number(r.featured) === 1,
@@ -952,7 +953,7 @@ function mapWebsiteSermon(r: Record<string, string>, i: number): SermonItem {
     youtubeUrl: youtube,
     facebookUrl: facebook,
     audioUrl: absoluteFileUrl(r.audio_recording ?? r.audio_url) ?? "",
-    notes: r.notes ?? "",
+    notes: absolutizeHtmlFileUrls(r.notes),
   };
 }
 
@@ -983,7 +984,7 @@ function mapChurchItSermon(
     youtubeUrl: youtube,
     facebookUrl: facebook,
     audioUrl: absoluteFileUrl(audioPath) ?? "",
-    notes: r.notes ?? "",
+    notes: absolutizeHtmlFileUrls(r.notes),
     slides,
     _sortTime: parseDate(rawDate)?.getTime() ?? 0,
   };

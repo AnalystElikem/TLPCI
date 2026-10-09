@@ -178,6 +178,22 @@ export function absoluteFileUrl(path?: string | null): string | null {
   }
 }
 
+/**
+ * Story and notes text written in ERPNext links to its files with relative
+ * paths such as src="/files/photo.jpg". Those only work on the ERPNext site,
+ * so on this website they would be broken images. Point them at ERPNext.
+ */
+export function absolutizeHtmlFileUrls(html?: string | null): string {
+  if (!html) return "";
+  return html.replace(
+    /\b(src|href)=(["'])\s*(\/?(?:private\/)?files\/[^"']*)\2/gi,
+    (match, attr: string, quote: string, path: string) => {
+      const url = absoluteFileUrl(path);
+      return url ? `${attr}=${quote}${url}${quote}` : match;
+    }
+  );
+}
+
 /** Whether write (create) credentials are configured. */
 export function erpnextWriteConfigured(): boolean {
   return Boolean(BASE_URL && WRITE_API_KEY && WRITE_API_SECRET);

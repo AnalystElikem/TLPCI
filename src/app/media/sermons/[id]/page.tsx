@@ -9,6 +9,7 @@ import {
   User,
 } from "lucide-react";
 import ContentImage from "@/components/ui/ContentImage";
+import FullCover, { BlurredBackdrop } from "@/components/ui/FullCover";
 import SermonMediaActions from "@/components/sermons/SermonMediaActions";
 import { getSermon, getSermons, sermonPath } from "@/lib/content-source";
 import { sanitizeHtml } from "@/lib/sanitize";
@@ -50,17 +51,10 @@ export default async function SermonDetailPage({ params }: Props) {
 
   return (
     <>
-      <section className="relative h-[260px] overflow-hidden md:h-[380px]">
-        <ContentImage
-          src={sermon.image}
-          alt={sermon.title}
-          fill
-          imageClassName="object-cover"
-          sizes="100vw"
-          priority
-        />
+      <section className="relative overflow-hidden bg-foreground">
+        <BlurredBackdrop src={sermon.image} priority />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/25" />
-        <div className="absolute inset-0 flex flex-col justify-end px-4 pb-8 lg:px-8">
+        <div className="relative px-4 pb-10 pt-12 md:pb-12 md:pt-16 lg:px-8">
           <div className="mx-auto w-full max-w-[900px]">
             <Link
               href="/media/sermons"
@@ -104,6 +98,14 @@ export default async function SermonDetailPage({ params }: Props) {
           <SermonMediaActions sermon={sermon} variant="button" />
         </div>
       </section>
+
+      {!youtubeId && sermon.image && (
+        <section className="bg-muted-surface py-10 lg:py-14">
+          <div className="mx-auto max-w-[900px] px-4 lg:px-8">
+            <FullCover src={sermon.image} alt={sermon.title} />
+          </div>
+        </section>
+      )}
 
       {youtubeId && (
         <section className="bg-muted-surface py-10 lg:py-14">

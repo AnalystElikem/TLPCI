@@ -12,6 +12,7 @@ import {
   Building2,
   Tag,
 } from "lucide-react";
+import FullCover, { BlurredBackdrop } from "@/components/ui/FullCover";
 import { CHURCH_LOGO } from "@/lib/constants";
 import { getAllEvents, getEvent, eventPath, eventSignUpPath, isEventPast } from "@/lib/content-source";
 
@@ -67,22 +68,15 @@ export default async function EventDetailPage({ params }: Props) {
 
   return (
     <>
-      {/* Poster hero — custom_event_poster from Church IT */}
-      <section className="relative min-h-[280px] overflow-hidden md:min-h-[420px]">
+      {/* Title band: blurred poster as a backdrop, full poster shown below */}
+      <section className="relative overflow-hidden">
         {event.poster ? (
-          <Image
-            src={event.poster}
-            alt={`${event.title} poster`}
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-          />
+          <BlurredBackdrop src={event.poster} priority />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-secondary-dark via-secondary to-primary" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/30" />
-        <div className="relative flex min-h-[280px] flex-col justify-end px-4 pb-8 md:min-h-[420px] lg:px-8">
+        <div className="relative px-4 pb-10 pt-12 md:pb-12 md:pt-16 lg:px-8">
           <div className="mx-auto w-full max-w-[1100px]">
             <Link
               href="/news-events/events"
@@ -125,6 +119,16 @@ export default async function EventDetailPage({ params }: Props) {
       <section className="bg-muted-surface py-14 lg:py-20">
         <div className="mx-auto grid max-w-[1100px] gap-10 px-4 lg:grid-cols-[1fr_340px] lg:gap-12 lg:px-8">
           <div>
+            {event.poster && (
+              <div className="mb-10 max-w-[720px]">
+                <FullCover
+                  src={event.poster}
+                  alt={`${event.title} poster`}
+                  aspectClass="aspect-[4/3]"
+                  sizes="(max-width: 1024px) 100vw, 720px"
+                />
+              </div>
+            )}
             {event.description ? (
               <div className="max-w-2xl">
                 <span className="section-accent" />
