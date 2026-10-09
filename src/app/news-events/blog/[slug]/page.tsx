@@ -37,17 +37,19 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <>
-      <section className="relative h-[240px] overflow-hidden md:h-[340px]">
+      <section className="relative overflow-hidden bg-foreground">
+        {/* Blurred copy of the cover as a backdrop, so nothing is cropped away */}
         <Image
           src={item.image}
-          alt={item.title}
+          alt=""
+          aria-hidden
           fill
-          className="object-cover"
+          className="scale-110 object-cover opacity-40 blur-2xl"
           sizes="100vw"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/25" />
-        <div className="absolute inset-0 flex flex-col justify-end px-4 pb-8 lg:px-8">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/40" />
+        <div className="relative px-4 pb-10 pt-12 md:pb-12 md:pt-16 lg:px-8">
           <div className="mx-auto w-full max-w-[820px]">
             <Link
               href="/news-events/blog"
@@ -56,7 +58,7 @@ export default async function BlogPostPage({ params }: Props) {
               <ArrowLeft className="h-3.5 w-3.5" />
               Latest news
             </Link>
-            <p className="mt-3 text-xs font-bold uppercase tracking-[0.25em] text-white/75">
+            <p className="mt-4 text-xs font-bold uppercase tracking-[0.25em] text-white/75">
               {item.category} · {item.date}
             </p>
             <h1 className="mt-2 font-serif text-3xl font-bold leading-tight text-white md:text-4xl">
@@ -70,7 +72,27 @@ export default async function BlogPostPage({ params }: Props) {
       </section>
 
       <section className="bg-white py-14 lg:py-20">
-        <div className="mx-auto max-w-[760px] px-4 lg:px-8">
+        <div className="mx-auto max-w-[900px] px-4 lg:px-8">
+          {/* Full cover photo, never cropped, whatever its shape */}
+          <div className="relative aspect-video w-full overflow-hidden bg-foreground shadow-md">
+            <Image
+              src={item.image}
+              alt=""
+              aria-hidden
+              fill
+              className="scale-110 object-cover opacity-50 blur-2xl"
+              sizes="(max-width: 900px) 100vw, 900px"
+            />
+            <Image
+              src={item.image}
+              alt={item.title}
+              fill
+              className="object-contain"
+              sizes="(max-width: 900px) 100vw, 900px"
+            />
+          </div>
+        </div>
+        <div className="mx-auto mt-10 max-w-[760px] px-4 lg:px-8">
           {bodyHtml ? (
             <div
               className="prose-tlpci text-justify leading-relaxed text-text-muted"
