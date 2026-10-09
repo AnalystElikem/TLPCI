@@ -4,7 +4,7 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import { blogPostPath, type BlogPost } from "@/lib/content-source";
 
 export default function BottomColumns({ news }: { news?: BlogPost[] }) {
-  const latest = (news ?? []).slice(0, 4);
+  const latest = (news ?? []).slice(0, 3);
   const hasPosts = latest.length > 0;
 
   return (
@@ -23,20 +23,20 @@ export default function BottomColumns({ news }: { news?: BlogPost[] }) {
 
         {hasPosts ? (
           <>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-3">
               {latest.map((item) => (
                 <Link
                   key={item.id}
                   href={blogPostPath(item.id)}
                   className="card-shadow group overflow-hidden transition-shadow hover:shadow-md"
                 >
-                  <div className="relative h-44 overflow-hidden">
+                  <div className="relative h-48 overflow-hidden">
                     <Image
                       src={item.image}
                       alt={item.title}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      sizes="(max-width: 768px) 100vw, 33vw"
                     />
                     <span className="date-badge absolute left-3 top-3">
                       {item.date}
