@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { getPageBanner } from "@/lib/content-source";
 import { getWebPageSection } from "@/lib/web-page-content";
 import { CmsPageIntro } from "@/components/cms/CmsPageSections";
 import Link from "next/link";
@@ -63,10 +62,7 @@ const quickLinks = [
 export const revalidate = 300;
 
 export default async function OurStoryPage() {
-  const [hero, banner] = await Promise.all([
-    getWebPageSection(PAGE_ROUTE, "hero"),
-    getPageBanner("Our Story", PAGE_ROUTE),
-  ]);
+  const hero = await getWebPageSection(PAGE_ROUTE, "hero");
   return (
     <>
       <CmsPageIntro
@@ -79,16 +75,41 @@ export default async function OurStoryPage() {
       {/* Origin narrative */}
       <section className="border-t border-border bg-muted-surface">
         <div className="mx-auto grid max-w-[1100px] items-center gap-10 px-4 py-16 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-24">
-          <div className="relative min-h-[320px] overflow-hidden shadow-sm md:min-h-[420px]">
-            <Image
-              src={banner || "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1000&q=80"}
-              alt={CHURCH_NAME}
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
-            />
-          </div>
+          {/* Founder portrait panel (original, code-based: no stock photo) */}
+          <figure className="relative flex min-h-[320px] flex-col items-center justify-center gap-6 overflow-hidden bg-[#1c0a0e] px-6 py-10 text-center shadow-sm sm:flex-row sm:gap-8 sm:text-left md:min-h-[420px]">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-4 -top-6 select-none font-serif text-[170px] font-black leading-none text-white/[0.05] md:text-[220px]"
+            >
+              1961
+            </span>
+            <div className="relative h-[220px] w-[165px] shrink-0 overflow-hidden ring-4 ring-white/90 md:h-[280px] md:w-[210px]">
+              <Image
+                src="/images/leadership/past-overseers/amedzro.jpg"
+                alt="Apostle John Sam Amedzro, founder of the church"
+                fill
+                className="object-cover"
+                sizes="210px"
+                priority
+              />
+            </div>
+            <figcaption className="relative text-white">
+              <span className="mb-3 block h-[3px] w-10 bg-primary" />
+              <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/70">
+                Our Founder
+              </p>
+              <p className="mt-2 font-serif text-xl font-bold leading-snug md:text-2xl">
+                Apostle John Sam Amedzro
+              </p>
+              <p className="mt-2 text-sm text-white/75">
+                Peki-Blengo, Volta Region
+                <br />
+                First General Overseer
+                <br />
+                1961 – 1972
+              </p>
+            </figcaption>
+          </figure>
           <div className="space-y-5 text-justify leading-relaxed text-text-muted">
             <span className="section-accent" />
             <h2 className="font-serif text-2xl font-bold text-foreground md:text-3xl">
@@ -241,13 +262,13 @@ export default async function OurStoryPage() {
       <section className="relative overflow-hidden">
         <div className="relative min-h-[280px] md:min-h-[320px]">
           <Image
-            src="https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1400&q=80"
+            src="/images/about/become-part-of-the-story.jpg"
             alt="Find a local church"
             fill
-            className="object-cover"
+            className="object-cover object-left md:object-center"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-black/55" />
+          <div className="absolute inset-0 bg-black/25" />
           <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
             <h2 className="text-2xl font-bold uppercase text-white md:text-4xl">
               Become Part of the Story
