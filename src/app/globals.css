@@ -236,10 +236,7 @@ body {
 }
 
 .testimony-hero {
-  background:
-    linear-gradient(to right, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.2)),
-    url("https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&q=80")
-      center / cover no-repeat;
+  background-color: #3a050c;
 }
 
 .card-thumb-1 {

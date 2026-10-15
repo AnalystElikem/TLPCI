@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { WebPageSectionValues } from "@/lib/web-page-content";
 import { webText } from "@/lib/web-page-content";
 
+const TESTIMONIES_BANNER = "/images/home/testimonies-banner.jpg";
+
 export default function TestimoniesSection({
   cms,
   background,
@@ -14,11 +16,9 @@ export default function TestimoniesSection({
     <section className="relative min-h-[300px] md:min-h-[360px]">
       <div
         className="testimony-hero absolute inset-0 bg-cover bg-center"
-        style={
-          background
-            ? { backgroundImage: `linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55)), url(${background})` }
-            : undefined
-        }
+        style={{
+          backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.25), rgba(0,0,0,0)), url(${background ?? TESTIMONIES_BANNER})`,
+        }}
       />
       <div className="relative mx-auto flex max-w-[1400px] flex-col justify-center px-4 py-16 lg:px-8 lg:py-20">
         <span className="section-accent-white" />

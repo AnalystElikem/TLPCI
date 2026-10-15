@@ -365,8 +365,8 @@ When ERPNext has no published sermons, events or news, the site shows a plain
 
 These doctypes do not exist on this ERPNext site: Hero Slide, Page Banner, Home
 Settings and Executive Committee. They are not needed, because slides and banners
-are edited in Web Pages (above). The Lord's Hour and testimonies background
-images, past General Overseers and the General Overseer's biography still use
+are edited in Web Pages (above). The Lord's Hour image and the testimonies background
+(`public/images/home/testimonies-banner.jpg`, an original design with no text), past General Overseers and the General Overseer's biography still use
 built-in content.
 
 ### The two ERPNext users (keep these straight)
