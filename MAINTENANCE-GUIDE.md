@@ -9,6 +9,23 @@ how to make the change go live. No deep coding knowledge required for most of it
 
 ---
 
+## Putting the site "under construction" (and back)
+
+The site has a built-in maintenance switch (`src/proxy.ts`). When it is on, every visitor sees a short "Our website is getting an upgrade" notice, search engines are told to come back later, and nothing else changes.
+
+**Turn it ON**
+1. Vercel, project `tlpci`, Settings, Environment Variables.
+2. Add `MAINTENANCE_MODE` with the value `true` (Production ticked).
+3. Deployments, open the latest one, Redeploy. Changes to variables only apply after a redeploy.
+
+**Turn it OFF (go live again)**
+1. Delete the `MAINTENANCE_MODE` variable (or change it to `false`).
+2. Redeploy the same way.
+
+**Optional: keep looking at the real site yourself.** Add a second variable `MAINTENANCE_BYPASS_KEY` with a secret word of your choice. Open any page with `?bypass=thatword` on the end, for example `https://www.tlpci.org/?bypass=thatword`. That browser sees the real site for 12 hours. Everyone else still sees the notice.
+
+---
+
 ## 0. The two ways a change goes live
 
 **A. Content in ERPNext** (homepage slides and welcome text, every page's headline
