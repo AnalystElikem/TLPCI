@@ -24,7 +24,7 @@ export default function CmsPageBanner({
   fallbackTitle,
   fallbackSubtitle,
   heightClass = "h-[200px] md:h-[280px]",
-  overlayClass = "bg-gradient-to-t from-black/70 via-black/45 to-black/35",
+  overlayClass = "bg-gradient-to-t from-black/40 via-black/20 to-black/10",
   showSubtitle = false,
 }: CmsPageBannerProps) {
   const image = webImage(cms, "image", fallbackImage) ?? fallbackImage;
@@ -49,7 +49,7 @@ export default function CmsPageBanner({
             {eyebrow}
           </p>
         ) : null}
-        <h1 className="mt-3 text-3xl font-bold uppercase tracking-wide text-white md:text-5xl">
+        <h1 className="mt-3 text-3xl font-bold uppercase tracking-wide text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)] md:text-5xl">
           {title}
         </h1>
         {showSubtitle && subtitle ? (

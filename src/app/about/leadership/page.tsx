@@ -49,7 +49,7 @@ export default async function LeadershipPage() {
         alt="Leadership"
         fallbackImage={
           banner ||
-          "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=1600&q=80"
+          "/images/banners/leadership.jpg"
         }
         fallbackEyebrow="Meet Our Leaders"
         fallbackTitle="Leadership"
@@ -184,13 +184,13 @@ export default async function LeadershipPage() {
       <section className="relative overflow-hidden">
         <div className="relative min-h-[220px] md:min-h-[260px]">
           <Image
-            src="https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1400&q=80"
+            src="/images/banners/leadership-cta.jpg"
             alt="Local congregation"
             fill
             className="object-cover"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-black/55" />
+          <div className="absolute inset-0 bg-black/20" />
           <div className="absolute inset-0 flex flex-col items-start justify-center px-6 md:px-10 lg:px-16">
             <div className="mx-auto w-full max-w-[1200px]">
               <span className="section-accent-white" />

@@ -72,7 +72,7 @@ export default async function ContactPage() {
         alt="Contact us"
         fallbackImage={
           banner ||
-          "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=1600&q=80"
+          "/images/banners/contact.jpg"
         }
         fallbackEyebrow="Get in touch"
         fallbackTitle="Contact"

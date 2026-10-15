@@ -24,7 +24,7 @@ export default async function WhatWeBelievePage() {
       <CmsPageBanner
         cms={hero}
         alt="What We Believe"
-        fallbackImage="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1600&q=80"
+        fallbackImage="/images/banners/what-we-believe.jpg"
         fallbackTitle="What We Believe"
       />
 
@@ -81,13 +81,13 @@ export default async function WhatWeBelievePage() {
       <section className="relative overflow-hidden">
         <div className="relative min-h-[220px] md:min-h-[260px]">
           <Image
-            src="https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1400&q=80"
+            src="/images/banners/what-we-believe-cta.jpg"
             alt="Church gathering"
             fill
             className="object-cover"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-black/55" />
+          <div className="absolute inset-0 bg-black/20" />
           <div className="absolute inset-0 flex flex-col items-start justify-center px-6 md:px-10 lg:px-16">
             <div className="mx-auto w-full max-w-[1400px]">
               <span className="section-accent-white" />

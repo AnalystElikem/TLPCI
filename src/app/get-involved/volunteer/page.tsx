@@ -60,7 +60,7 @@ export default async function VolunteerPage() {
         alt="Volunteers serving together"
         fallbackImage={
           banner ||
-          "https://images.unsplash.com/photo-1544776193-352d25ca82cd?w=1600&q=80"
+          "/images/banners/volunteer.jpg"
         }
         fallbackEyebrow="Make a difference"
         fallbackTitle="Volunteer"

@@ -41,7 +41,7 @@ export default async function MembershipPage() {
         alt="Church family"
         fallbackImage={
           banner ||
-          "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=1200&q=80"
+          "/images/banners/membership.jpg"
         }
         fallbackEyebrow="More than attendance"
         fallbackTitle="A place to belong"

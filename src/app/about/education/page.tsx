@@ -32,7 +32,7 @@ export default async function EducationPage() {
         alt="Education"
         fallbackImage={
           banner ||
-          "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=1600&q=80"
+          "/images/banners/education.jpg"
         }
         fallbackEyebrow="Reaching Minds & Hearts"
         fallbackTitle="Education & Training"

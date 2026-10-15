@@ -29,7 +29,7 @@ export default async function PrayerRequestPage() {
         alt="Prayer"
         fallbackImage={
           banner ||
-          "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&q=80"
+          "/images/banners/prayer-request.jpg"
         }
         fallbackTitle="We will pray with you"
         fallbackSubtitle="Whatever you are carrying, you do not have to carry it alone. Share your request with our prayer team."

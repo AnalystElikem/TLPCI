@@ -27,7 +27,7 @@ export default async function ChurchLocatorPage() {
         alt="Find a Church"
         fallbackImage={
           banner ||
-          "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1600&q=80"
+          "/images/banners/find-a-church.jpg"
         }
         fallbackEyebrow="Church Locator"
         fallbackTitle="Find a Church"

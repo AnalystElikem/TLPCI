@@ -50,7 +50,7 @@ export default async function PlanYourVisitPage() {
         alt="Church worship service"
         fallbackImage={
           banner ||
-          "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1600&q=80"
+          "/images/banners/plan-your-visit.jpg"
         }
         fallbackEyebrow="Your first Sunday"
         fallbackTitle="Plan Your Visit"

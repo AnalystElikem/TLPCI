@@ -29,7 +29,7 @@ export default async function PastorsPage() {
         alt="Our Ministers"
         fallbackImage={
           banner ||
-          "https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=1600&q=80"
+          "/images/banners/ministers.jpg"
         }
         fallbackEyebrow="Servants of the Church"
         fallbackTitle="Our Ministers"
@@ -56,13 +56,13 @@ export default async function PastorsPage() {
       <section className="relative overflow-hidden">
         <div className="relative min-h-[220px] md:min-h-[260px]">
           <Image
-            src="https://images.unsplash.com/photo-1524230572899-a752b3835840?w=1400&q=80"
+            src="/images/banners/ministers-cta.jpg"
             alt="Visit a church"
             fill
             className="object-cover"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-black/55" />
+          <div className="absolute inset-0 bg-black/20" />
           <div className="absolute inset-0 flex flex-col items-start justify-center px-6 md:px-10 lg:px-16">
             <div className="mx-auto w-full max-w-[1200px]">
               <span className="section-accent-white" />

@@ -91,11 +91,11 @@ export default async function LivestreamPage() {
                 <Image
                   src={
                     banner ||
-                    "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1400&q=80"
+                    "/images/banners/livestream.jpg"
                   }
                   alt="Livestream"
                   fill
-                  className="object-cover opacity-40"
+                  className="object-cover opacity-70"
                   sizes="1100px"
                   priority
                 />

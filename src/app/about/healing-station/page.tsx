@@ -45,7 +45,7 @@ export default async function HealingStationPage() {
         alt="The Tokokoe Healing Station"
         fallbackImage={
           banner ||
-          "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&q=80"
+          "/images/banners/healing-station.jpg"
         }
         fallbackEyebrow="A Place of Encounter"
         fallbackTitle="The Tokokoe Healing Station"
