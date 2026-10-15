@@ -16,6 +16,7 @@ import {
   getHomeHeroSlides,
   getHomeSettings,
   getLeadership,
+  isEventPast,
 } from "@/lib/content-source";
 import { HOME_PAGE_ROUTE } from "@/lib/page-routes";
 import { getWebPageSection } from "@/lib/web-page-content";
@@ -48,7 +49,7 @@ export default async function Home() {
         image={home.advertisementBanner}
       />
       <SermonsSection sermons={sermons} />
-      <EventsBar events={events} />
+      <EventsBar events={events.filter((event) => !isEventPast(event))} />
       <DailyDevotion />
       <TestimoniesSection cms={testimonies} background={home.testimoniesBackground} />
       <BottomColumns news={news} />

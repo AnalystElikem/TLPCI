@@ -1,8 +1,14 @@
+import { Fragment } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Clock, MapPin, CalendarDays, Home } from "lucide-react";
-import { getEvents, getPageBanner, eventPath } from "@/lib/content-source";
+import {
+  getEvents,
+  getPageBanner,
+  eventPath,
+  isEventPast,
+} from "@/lib/content-source";
 import { getWebPageSection } from "@/lib/web-page-content";
 import CmsPageBanner from "@/components/cms/CmsPageSections";
 
@@ -91,7 +97,7 @@ export default async function EventsPage() {
               </h2>
             </div>
             <p className="hidden text-sm text-text-muted sm:block">
-              {events.length} scheduled
+              {events.filter((event) => !isEventPast(event)).length} scheduled
             </p>
           </div>
 
@@ -102,54 +108,74 @@ export default async function EventsPage() {
             </p>
           )}
           <ul className="mt-8 space-y-4">
-            {events.map((event) => {
+            {events.map((event, index) => {
               const [month, day] = event.date.split(" ");
+              const past = isEventPast(event);
+              const firstPast =
+                past && !isEventPast(events[index - 1] ?? event);
               return (
-                <li
-                  key={event.id}
-                  className="grid gap-4 bg-white p-5 shadow-sm sm:grid-cols-[90px_1fr_auto] sm:items-center sm:gap-6 md:p-6"
-                >
-                  <Link
-                    href={eventPath(event.id)}
-                    className="flex h-[72px] w-[72px] flex-col items-center justify-center bg-foreground text-white sm:h-[80px] sm:w-[80px]"
+                <Fragment key={event.id}>
+                  {firstPast && (
+                    <li
+                      aria-hidden="true"
+                      className="pt-6 text-xs font-bold uppercase tracking-widest text-text-muted"
+                    >
+                      Past events
+                    </li>
+                  )}
+                  <li
+                    className={`grid gap-4 p-5 shadow-sm sm:grid-cols-[90px_1fr_auto] sm:items-center sm:gap-6 md:p-6 ${
+                      past ? "bg-white/60 opacity-60 grayscale" : "bg-white"
+                    }`}
                   >
-                    <span className="text-[11px] font-bold uppercase tracking-wide">
-                      {month}
-                    </span>
-                    <span className="text-2xl font-bold leading-none sm:text-3xl">
-                      {day}
-                    </span>
-                  </Link>
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-primary">
-                      {event.category}
-                    </p>
-                    <h3 className="mt-1 text-lg font-bold text-foreground">
-                      <Link href={eventPath(event.id)} className="hover:text-primary">
-                        {event.title}
-                      </Link>
-                    </h3>
-                    <p className="mt-1 text-sm leading-relaxed text-text-muted">
-                      {event.description}
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-text-muted">
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="h-3.5 w-3.5 text-primary" />
-                        {event.time}
+                    <Link
+                      href={eventPath(event.id)}
+                      className={`flex h-[72px] w-[72px] flex-col items-center justify-center text-white sm:h-[80px] sm:w-[80px] ${
+                        past ? "bg-text-muted" : "bg-foreground"
+                      }`}
+                    >
+                      <span className="text-[11px] font-bold uppercase tracking-wide">
+                        {month}
                       </span>
-                      <span className="flex items-center gap-1.5">
-                        <MapPin className="h-3.5 w-3.5 text-primary" />
-                        {event.location}
+                      <span className="text-2xl font-bold leading-none sm:text-3xl">
+                        {day}
                       </span>
+                    </Link>
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-wide text-primary">
+                        {event.category}
+                        {past && " · Past event"}
+                      </p>
+                      <h3 className="mt-1 text-lg font-bold text-foreground">
+                        <Link
+                          href={eventPath(event.id)}
+                          className="hover:text-primary"
+                        >
+                          {event.title}
+                        </Link>
+                      </h3>
+                      <p className="mt-1 text-sm leading-relaxed text-text-muted">
+                        {event.description}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-text-muted">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 text-primary" />
+                          {event.time}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <MapPin className="h-3.5 w-3.5 text-primary" />
+                          {event.location}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <Link
-                    href={eventPath(event.id)}
-                    className="btn btn-outline w-fit sm:justify-self-end"
-                  >
-                    View details
-                  </Link>
-                </li>
+                    <Link
+                      href={eventPath(event.id)}
+                      className="btn btn-outline w-fit sm:justify-self-end"
+                    >
+                      View details
+                    </Link>
+                  </li>
+                </Fragment>
               );
             })}
           </ul>

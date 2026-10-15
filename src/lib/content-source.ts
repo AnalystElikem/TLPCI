@@ -264,7 +264,9 @@ function sortByEventDate(rows: Record<string, string>[]) {
   rows.sort(
     (a, b) =>
       (parseDate(eventDateOf(a))?.getTime() ?? 0) -
-      (parseDate(eventDateOf(b))?.getTime() ?? 0)
+        (parseDate(eventDateOf(b))?.getTime() ?? 0) ||
+      // Same day: earlier start time first (ERPNext times look like "09:00:00").
+      String(a.start_time ?? "").localeCompare(String(b.start_time ?? ""))
   );
 }
 
@@ -424,7 +426,16 @@ function mapFunction(
   };
 }
 
-/** Church-wide functions for the homepage + Events page (excludes ad poster slots). */
+function upcomingFirst(events: EventItem[]): EventItem[] {
+  // `events` arrives sorted by start date, earliest first.
+  const upcoming = events.filter((e) => !isEventPast(e));
+  const past = events.filter((e) => isEventPast(e)).reverse();
+  return [...upcoming, ...past];
+}
+
+/** Church-wide functions (excludes ad poster slots): upcoming events first,
+ *  soonest at the top, then past events, most recent first. The homepage hides
+ *  the past ones (isEventPast); the Events page shows them greyed out. */
 export const getEvents = cache(async function getEvents(): Promise<EventItem[]> {
   const rows = await fetchPublishedFunctions();
   if (!rows || rows.length === 0) return [];
@@ -438,14 +449,16 @@ export const getEvents = cache(async function getEvents(): Promise<EventItem[]> 
     const addressMap = await fetchAddressMap(eligible.map((r) => r.address ?? ""));
     const churchWide = eligible.filter((r) => isChurchWideFunction(r, ministryMap));
     sortByEventDate(churchWide);
-    return churchWide.map((r, i) => mapFunction(r, i, addressMap, ministryMap));
+    return upcomingFirst(
+      churchWide.map((r, i) => mapFunction(r, i, addressMap, ministryMap))
+    );
   }
 
   const churchWide = eligible.filter((r) =>
     CHURCH_WIDE.has(eventMinistryOf(r))
   );
   sortByEventDate(churchWide);
-  return churchWide.map(mapWebsiteEvent);
+  return upcomingFirst(churchWide.map(mapWebsiteEvent));
 });
 
 /** Homepage poster carousel — recent/upcoming ad functions (excludes events list). */
