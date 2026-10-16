@@ -2247,6 +2247,14 @@ const fetchAllMinisterPersonRecords = cache(async function fetchAllMinisterPerso
   return getCachedMinisterPersonRecords();
 });
 
+/** General Overseer first, then office holders (Directors etc.), then everyone else A to Z. */
+function ministerListOrder(m: Minister): number {
+  if (/general overseer/i.test(m.office ?? "")) return 0;
+  const office = (m.office ?? "").trim().toLowerCase();
+  if (office && office !== m.positionType.trim().toLowerCase()) return 1;
+  return 2;
+}
+
 /** Ministers grouped by current position from ERPNext Person records. */
 export const getMinisters = cache(async function getMinisters(): Promise<
   MinisterGroup[]
@@ -2277,7 +2285,9 @@ export const getMinisters = cache(async function getMinisters(): Promise<
     .map(([type, ministers]) => ({
       rank: ministerRankPlural(type),
       count: ministers.length,
-      ministers: ministers.sort((a, b) => a.name.localeCompare(b.name)),
+      ministers: ministers.sort(
+        (a, b) => ministerListOrder(a) - ministerListOrder(b) || a.name.localeCompare(b.name)
+      ),
     }));
 });
 

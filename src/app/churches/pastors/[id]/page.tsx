@@ -44,10 +44,18 @@ export default async function MinisterDetailPage({ params }: Props) {
   ]);
   if (!minister) notFound();
 
-  const others = groups
+  // "More ministers": the next few people of the same rank (wrapping round),
+  // topped up from other ranks, so the suggestions differ from page to page.
+  const sameRank =
+    groups.find((g) => g.ministers.some((m) => m.id === minister.id))
+      ?.ministers ?? [];
+  const at = sameRank.findIndex((m) => m.id === minister.id);
+  const rotated = [...sameRank.slice(at + 1), ...sameRank.slice(0, Math.max(at, 0))];
+  const rest = groups
     .flatMap((group) => group.ministers)
-    .filter((m) => m.id !== minister.id)
-    .slice(0, 4);
+    .filter((m) => m.id !== minister.id && !sameRank.some((s) => s.id === m.id));
+  const others = [...rotated, ...rest].slice(0, 4);
+  const hasPhoto = Boolean(minister.photo?.trim());
 
   return (
     <>
@@ -61,8 +69,16 @@ export default async function MinisterDetailPage({ params }: Props) {
             All ministers
           </Link>
 
-          <div className="mt-8 grid gap-10 md:grid-cols-[minmax(0,320px)_1fr] md:items-start">
-            <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface shadow-sm">
+          <div
+            className={`mt-8 grid gap-6 md:items-start md:gap-10 ${
+              hasPhoto ? "md:grid-cols-[minmax(0,320px)_1fr]" : "md:grid-cols-[140px_1fr]"
+            }`}
+          >
+            <div
+              className={`relative overflow-hidden bg-surface shadow-sm ${
+                hasPhoto ? "aspect-[3/4] w-full" : "aspect-square w-28 md:w-full"
+              }`}
+            >
               <ContentImage
                 src={minister.photo}
                 alt={minister.name}
@@ -119,7 +135,9 @@ export default async function MinisterDetailPage({ params }: Props) {
                     {formatServiceDates(position.startDate, position.endDate)}
                     {position.current ? " · Current" : ""}
                   </p>
-                  {position.notes && (
+                  {position.notes &&
+                    position.notes.trim().toLowerCase() !==
+                      position.title.trim().toLowerCase() && (
                     <p className="mt-2 text-sm leading-relaxed text-text-muted">
                       {position.notes}
                     </p>

@@ -165,11 +165,11 @@ export default function MinistersDirectory({
                               {m.branch && (
                                 <>
                                   <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
-                                  {m.branch}
+                                  <span className="min-w-0">{m.branch}</span>
                                 </>
                               )}
                               {m.ordained && (
-                                <span className="ml-auto text-xs text-text-muted">
+                                <span className="ml-auto shrink-0 whitespace-nowrap pl-2 text-xs text-text-muted">
                                   Ord. {m.ordained}
                                 </span>
                               )}
