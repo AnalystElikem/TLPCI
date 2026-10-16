@@ -1,6 +1,7 @@
-import { branchNetwork } from "@/data/branchNetwork";
+import type { RegionGroup } from "@/data/branchNetwork";
 
 interface BranchSelectProps {
+  network: RegionGroup[];
   name?: string;
   required?: boolean;
   className?: string;
@@ -10,6 +11,7 @@ interface BranchSelectProps {
 // Reusable branch picker, populated from the full branch network and grouped
 // by region. Use in any form that needs a branch selection.
 export default function BranchSelect({
+  network,
   name = "branch",
   required = false,
   className = "field",
@@ -26,7 +28,7 @@ export default function BranchSelect({
       <option value="" disabled>
         Choose a branch
       </option>
-      {branchNetwork.map((region) => (
+      {network.map((region) => (
         <optgroup key={region.region} label={region.region}>
           {region.areas
             .flatMap((a) => a.branches)

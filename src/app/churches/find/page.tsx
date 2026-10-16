@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getPageBanner } from "@/lib/content-source";
+import { getPageBanner, getBranchNetwork } from "@/lib/content-source";
 import { getWebPageSection, webText } from "@/lib/web-page-content";
 import CmsPageBanner from "@/components/cms/CmsPageSections";
 import Link from "next/link";
@@ -16,9 +16,10 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function ChurchLocatorPage() {
-  const [hero, banner] = await Promise.all([
+  const [hero, banner, branches] = await Promise.all([
     getWebPageSection(PAGE_ROUTE, "hero"),
     getPageBanner("Find a Church", PAGE_ROUTE),
+    getBranchNetwork(),
   ]);
   return (
     <>
@@ -67,7 +68,7 @@ export default async function ChurchLocatorPage() {
 
       <section className="bg-muted-surface py-12 lg:py-16">
         <div className="mx-auto max-w-[1200px] px-4 lg:px-8">
-          <BranchDirectory />
+          <BranchDirectory network={branches.network} total={branches.total} />
         </div>
       </section>
 

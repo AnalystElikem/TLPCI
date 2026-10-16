@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getPageBanner } from "@/lib/content-source";
+import { getPageBanner, getBranchNetwork } from "@/lib/content-source";
 import { getWebPageSection } from "@/lib/web-page-content";
 import CmsPageBanner from "@/components/cms/CmsPageSections";
 import Link from "next/link";
@@ -38,9 +38,10 @@ const PAGE_ROUTE = "get-involved/plan-your-visit";
 export const revalidate = 300;
 
 export default async function PlanYourVisitPage() {
-  const [hero, banner] = await Promise.all([
+  const [hero, banner, branches] = await Promise.all([
     getWebPageSection(PAGE_ROUTE, "hero"),
     getPageBanner("Plan Your Visit", PAGE_ROUTE),
+    getBranchNetwork(),
   ]);
   return (
     <>
@@ -112,7 +113,7 @@ export default async function PlanYourVisitPage() {
             </div>
           </div>
 
-          <PlanVisitForm />
+          <PlanVisitForm network={branches.network} />
         </div>
       </section>
 

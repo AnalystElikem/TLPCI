@@ -3,17 +3,25 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, MapPin } from "lucide-react";
-import { branchNetwork, totalBranches } from "@/data/branchNetwork";
+import type { RegionGroup } from "@/data/branchNetwork";
 
-export default function BranchDirectory() {
+interface BranchDirectoryProps {
+  network: RegionGroup[];
+  total: number;
+}
+
+export default function BranchDirectory({
+  network,
+  total: totalBranches,
+}: BranchDirectoryProps) {
   const [query, setQuery] = useState("");
   const [activeRegion, setActiveRegion] = useState<string>("All");
 
-  const regions = ["All", ...branchNetwork.map((r) => r.region)];
+  const regions = ["All", ...network.map((r) => r.region)];
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return branchNetwork
+    return network
       .filter((r) => activeRegion === "All" || r.region === activeRegion)
       .map((r) => ({
         ...r,
@@ -27,7 +35,7 @@ export default function BranchDirectory() {
           .filter((a) => a.branches.length > 0),
       }))
       .filter((r) => r.areas.length > 0);
-  }, [query, activeRegion]);
+  }, [network, query, activeRegion]);
 
   const shown = results.reduce(
     (n, r) => n + r.areas.reduce((m, a) => m + a.branches.length, 0),

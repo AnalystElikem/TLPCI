@@ -30,6 +30,11 @@ import {
   webImage,
 } from "@/lib/web-page-content";
 import { HOME_PAGE_ROUTE, pageRouteForBanner } from "@/lib/page-routes";
+import {
+  branchNetwork as staticBranchNetwork,
+  totalBranches as staticTotalBranches,
+  type RegionGroup,
+} from "@/data/branchNetwork";
 
 // ---------------------------------------------------------------- date helpers
 const MONTHS = [
@@ -2298,3 +2303,118 @@ export async function getMinisterIds(): Promise<string[]> {
   const groups = await getMinisters();
   return groups.flatMap((group) => group.ministers.map((m) => m.id));
 }
+
+/* ------------------------------------------------------------------ */
+/* Branch network (Find a Church)                                       */
+/* ------------------------------------------------------------------ */
+
+export interface BranchNetworkResult {
+  network: RegionGroup[];
+  total: number;
+  /** "erpnext" when the live list was used, "static" when the backup file was. */
+  source: "erpnext" | "static";
+}
+
+/**
+ * Share of the backup list that ERPNext must reach before we trust it. This
+ * protects the public page from a half-filled list while the import is still
+ * in progress: below this, the backup file is shown instead.
+ */
+const MIN_ERPNEXT_BRANCH_SHARE = 0.8;
+
+type ChurchLocationRow = {
+  name?: string;
+  location?: string;
+  custom_region?: string;
+  custom_area?: string;
+  custom_sort_order?: number | string | null;
+  custom_show_on_website?: number | string | boolean | null;
+};
+
+function staticBranchResult(): BranchNetworkResult {
+  return {
+    network: staticBranchNetwork,
+    total: staticTotalBranches,
+    source: "static",
+  };
+}
+
+/**
+ * Branches grouped Region -> Area. ERPNext "Church Location" is the source;
+ * `src/data/branchNetwork.ts` is the backup used when ERPNext is unreachable,
+ * the custom fields are not set up yet, or the list is clearly incomplete.
+ */
+export const getBranchNetwork = cache(async function getBranchNetwork(): Promise<BranchNetworkResult> {
+  const rows = await erpnextList<ChurchLocationRow>("Church Location", {
+    fields: [
+      "name",
+      "location",
+      "custom_region",
+      "custom_area",
+      "custom_sort_order",
+      "custom_show_on_website",
+    ],
+    filters: [["custom_show_on_website", "=", 1]],
+  });
+  if (!rows || rows.length === 0) return staticBranchResult();
+
+  type Entry = { branch: string; region: string; area: string; order: number };
+  const entries: Entry[] = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    const branch = (row.location || row.name || "").trim();
+    const region = (row.custom_region || "").trim();
+    const area = (row.custom_area || "").trim();
+    if (!branch || !region || !area) continue;
+    const key = branch.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const order = Number(row.custom_sort_order);
+    entries.push({
+      branch,
+      region,
+      area,
+      order: Number.isFinite(order) && order > 0 ? order : Number.MAX_SAFE_INTEGER,
+    });
+  }
+
+  if (entries.length < Math.ceil(staticTotalBranches * MIN_ERPNEXT_BRANCH_SHARE)) {
+    return staticBranchResult();
+  }
+
+  const byOrderThenName = (a: Entry, b: Entry) =>
+    a.order - b.order || a.branch.localeCompare(b.branch);
+
+  const regionMap = new Map<string, Map<string, Entry[]>>();
+  for (const e of entries.sort(byOrderThenName)) {
+    if (!regionMap.has(e.region)) regionMap.set(e.region, new Map());
+    const areas = regionMap.get(e.region)!;
+    if (!areas.has(e.area)) areas.set(e.area, []);
+    areas.get(e.area)!.push(e);
+  }
+
+  const minOrder = (list: Entry[]) => Math.min(...list.map((e) => e.order));
+
+  const network: RegionGroup[] = [...regionMap.entries()]
+    .map(([region, areas]) => {
+      const areaList = [...areas.entries()]
+        .map(([area, list]) => ({ area, list }))
+        .sort(
+          (a, b) =>
+            minOrder(a.list) - minOrder(b.list) || a.area.localeCompare(b.area)
+        );
+      return {
+        region,
+        sort: Math.min(...areaList.map((a) => minOrder(a.list))),
+        count: areaList.reduce((n, a) => n + a.list.length, 0),
+        areas: areaList.map((a) => ({
+          area: a.area,
+          branches: a.list.map((e) => e.branch),
+        })),
+      };
+    })
+    .sort((a, b) => a.sort - b.sort || a.region.localeCompare(b.region))
+    .map(({ sort: _sort, ...region }) => region);
+
+  return { network, total: entries.length, source: "erpnext" };
+});

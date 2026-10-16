@@ -4,8 +4,9 @@ import BranchSelect from "./BranchSelect";
 import FormSuccess from "./FormSuccess";
 import PhoneInput from "./PhoneInput";
 import { usePlanVisitSubmit } from "@/lib/usePlanVisitSubmit";
+import type { RegionGroup } from "@/data/branchNetwork";
 
-export default function PlanVisitForm() {
+export default function PlanVisitForm({ network }: { network: RegionGroup[] }) {
   const { submitted, submitting, visitationLogId, error, handleSubmit, reset } =
     usePlanVisitSubmit();
 
@@ -54,7 +55,7 @@ export default function PlanVisitForm() {
         >
           Which branch?
         </label>
-        <BranchSelect required className="field" />
+        <BranchSelect network={network} required className="field" />
       </div>
       <div className="flex min-w-0 flex-col">
         <label
