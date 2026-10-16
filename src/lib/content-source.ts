@@ -2325,10 +2325,10 @@ const MIN_ERPNEXT_BRANCH_SHARE = 0.8;
 type ChurchLocationRow = {
   name?: string;
   location?: string;
-  custom_region?: string;
-  custom_area?: string;
-  custom_sort_order?: number | string | null;
-  custom_show_on_website?: number | string | boolean | null;
+  region?: string;
+  area?: string;
+  sort_order?: number | string | null;
+  show_on_website?: number | string | boolean | null;
 };
 
 function staticBranchResult(): BranchNetworkResult {
@@ -2349,12 +2349,12 @@ export const getBranchNetwork = cache(async function getBranchNetwork(): Promise
     fields: [
       "name",
       "location",
-      "custom_region",
-      "custom_area",
-      "custom_sort_order",
-      "custom_show_on_website",
+      "region",
+      "area",
+      "sort_order",
+      "show_on_website",
     ],
-    filters: [["custom_show_on_website", "=", 1]],
+    filters: [["show_on_website", "=", 1]],
   });
   if (!rows || rows.length === 0) return staticBranchResult();
 
@@ -2363,13 +2363,13 @@ export const getBranchNetwork = cache(async function getBranchNetwork(): Promise
   const seen = new Set<string>();
   for (const row of rows) {
     const branch = (row.location || row.name || "").trim();
-    const region = (row.custom_region || "").trim();
-    const area = (row.custom_area || "").trim();
+    const region = (row.region || "").trim();
+    const area = (row.area || "").trim();
     if (!branch || !region || !area) continue;
     const key = branch.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    const order = Number(row.custom_sort_order);
+    const order = Number(row.sort_order);
     entries.push({
       branch,
       region,
