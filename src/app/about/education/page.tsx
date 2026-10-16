@@ -143,8 +143,8 @@ export default async function EducationPage() {
           </div>
           <div className="relative min-h-[280px] overflow-hidden shadow-sm lg:min-h-[380px]">
             <Image
-              src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1200&q=80"
-              alt="Bible training school"
+              src="/images/education/tllbts-graduation.jpg"
+              alt="A certificate presentation at a Bible training school graduation"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
