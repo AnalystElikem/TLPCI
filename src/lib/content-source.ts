@@ -1569,7 +1569,7 @@ function councilTitleOf(positionType: string): string {
 
 function councilTitleRank(name: string): number {
   const n = name.trim().toLowerCase();
-  if (n.startsWith("apostle")) return 0;
+  if (n.startsWith("apostle") || n.startsWith("aps.")) return 0;
   if (n.startsWith("rev")) return 1;
   return 2;
 }
@@ -1637,7 +1637,8 @@ export const getLeadership = cache(async function getLeadership(): Promise<Leade
             record.full_name!.trim(),
             // "Council Member" is a seat, not a title — don't print it as one.
             councilTitleOf(primaryMinisterType(record.positions)),
-            record.custom_title
+            record.custom_title,
+            true
           ),
           role: personExecutiveRoleOf(record),
           image: absoluteFileUrl(record.photo) ?? "",
@@ -2106,6 +2107,8 @@ const MINISTER_TITLE_ABBREVIATIONS: Record<string, string> = {
   Reverend: "Rev.",
   Pastor: "Ps.",
   Elder: "Eld.",
+  Deacon: "Dcn.",
+  Deaconess: "Dcns.",
 };
 
 /**
