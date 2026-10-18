@@ -1959,6 +1959,7 @@ const MINISTER_RANK_ORDER = [
   "Pastor",
   "Elder",
   "Deacon",
+  "Deaconess",
 ];
 
 const MINISTER_RANK_PLURALS: Record<string, string> = {
@@ -1969,6 +1970,7 @@ const MINISTER_RANK_PLURALS: Record<string, string> = {
   Pastor: "Pastors",
   Elder: "Elders",
   Deacon: "Deacons",
+  Deaconess: "Deaconesses",
 };
 
 function ministerRankPlural(type: string): string {
@@ -2079,6 +2081,10 @@ function personDisplayName(
     name = `${honorific} ${name}`;
   }
   if (!name || !primaryType) return name;
+  // A Dcn. / Dcns. Title already says Deacon / Deaconess; don't add it twice.
+  if (/^dcns?\.$/i.test(honorific) && /^deacon(ess)?$/i.test(primaryType.trim())) {
+    return name;
+  }
   // Only real ministerial ranks become a prefix. Other position types (for
   // example a generic "Ministry Leader") leave the name as it is.
   if (!MINISTER_RANK_ORDER.includes(primaryType.trim())) return name;
