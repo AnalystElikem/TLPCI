@@ -157,7 +157,7 @@ const CHURCH_WIDE = new Set(["", "General", "Main", "Church-wide", "All"]);
 const MINISTRY_MATCH: Record<string, string[]> = {
   Men: ["Men", "Men's Ministry", "Men Ministry"],
   Women: ["Women", "Women's Ministry", "Women Ministry"],
-  Youth: ["Youth", "Youth Ministry"],
+  Youth: ["Youth", "Youth Ministry", "Youth Fellowship"],
   Students: ["Students", "Student Ministry", "Campus"],
   Children: ["Children", "Children's Ministry", "Kids"],
   Missions: ["Missions", "Mission"],

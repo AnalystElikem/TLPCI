@@ -655,7 +655,7 @@ export const ministries = [
       "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1400&q=80",
     meeting: "Fridays 5:00 pm",
     body: [
-      "Youth Ministry equips teenagers to stand firm in faith, develop godly character, and discover their calling in Christ.",
+      "Youth Fellowship equips teenagers to stand firm in faith, develop godly character, and discover their calling in Christ.",
       "Through teaching, mentorship, and fellowship, young people are challenged to live holy lives and impact their schools and communities.",
     ],
     focuses: [

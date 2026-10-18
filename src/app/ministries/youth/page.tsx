@@ -15,9 +15,9 @@ import MinistryRelatedContent from "@/components/ministries/MinistryRelatedConte
 const PAGE_ROUTE = "ministries/youth";
 
 export const metadata: Metadata = {
-  title: "Youth Ministry",
+  title: "Youth Fellowship",
   description:
-    "The Youth Ministry of TLPCI — raising young people who stand firm in faith and impact their world for Christ.",
+    "The Youth Fellowship of TLPCI — raising young people who stand firm in faith and impact their world for Christ.",
 };
 
 const rhythm = [
@@ -42,12 +42,15 @@ export default async function YouthMinistryPage() {
       <section className="relative min-h-[70vh] overflow-hidden bg-[#111]">
         <MinistryHeroMedia
           src={heroImage}
-          alt="Youth ministry"
+          alt="Youth Fellowship"
           className="object-cover opacity-50"
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
         <div className="relative mx-auto flex min-h-[70vh] max-w-[1200px] flex-col justify-end px-4 pb-14 pt-28 lg:px-8 lg:pb-20">
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-white/80">
+            Youth Fellowship
+          </p>
           <h1 className="max-w-2xl text-4xl font-bold uppercase leading-[0.95] text-white sm:text-5xl md:text-7xl">
             {webText(heroCms, "title", "Youth on fire")}
           </h1>
