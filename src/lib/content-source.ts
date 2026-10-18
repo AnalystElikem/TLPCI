@@ -1956,6 +1956,20 @@ const MINISTER_RANK_ORDER = [
   "Deaconess",
 ];
 
+/**
+ * Ranks listed on the Our Ministers page. Deacons, Deaconesses and Ministry
+ * Leaders are real roles but are not ordained ministers, so they are shown on
+ * their own ministry pages and the leadership page, not in this directory.
+ */
+const DIRECTORY_RANKS = [
+  "Apostle",
+  "Prophet",
+  "Senior Pastor",
+  "Reverend",
+  "Pastor",
+  "Elder",
+];
+
 const MINISTER_RANK_PLURALS: Record<string, string> = {
   Apostle: "Apostles",
   Prophet: "Prophets",
@@ -2182,15 +2196,31 @@ function personExecutiveRoleOf(record: PersonMinisterRecord): string {
   );
 }
 
+/**
+ * The person's current ordained rank for the directory: their most recent
+ * current position that is one of DIRECTORY_RANKS. Later roles such as
+ * Ministry Leader or Deacon do not hide or re-file an ordained minister.
+ */
+function directoryRankOf(positions?: PersonPositionRow[]): string {
+  const pool = sortedPersonPositions(currentPersonPositions(positions));
+  for (const row of pool) {
+    const type = row.position?.trim() ?? "";
+    if (DIRECTORY_RANKS.includes(type)) return type;
+  }
+  return "";
+}
+
 function mapPersonToMinister(
   record: PersonMinisterRecord,
-  locationMap?: Map<string, string>
+  locationMap?: Map<string, string>,
+  primaryTypeOverride?: string
 ): Minister | null {
   if (!record.full_name?.trim() || !personHasMinisterPosition(record)) {
     return null;
   }
 
-  const primaryType = primaryMinisterType(record.positions);
+  const primaryType =
+    primaryTypeOverride || primaryMinisterType(record.positions);
   if (!primaryType) return null;
 
   const minister: Minister = {
@@ -2213,9 +2243,15 @@ function mapPersonToMinister(
   const branch = locationId ? locationMap?.get(locationId) : undefined;
   if (branch) minister.branch = branch;
 
-  const primaryStart = sortedPersonPositions(
+  const currentRows = sortedPersonPositions(
     currentPersonPositions(record.positions)
-  )[0]?.start_date;
+  );
+  // "Ordained" year comes from the rank row itself, not a later role such as
+  // Ministry Leader.
+  const primaryStart = (
+    currentRows.find((row) => row.position?.trim() === primaryType) ??
+    currentRows[0]
+  )?.start_date;
   const ordained = ministerOrdainedYear(primaryStart);
   if (ordained) minister.ordained = ordained;
 
@@ -2377,7 +2413,9 @@ export const getMinisters = cache(async function getMinisters(): Promise<
   const byRank = new Map<string, Minister[]>();
 
   for (const record of records) {
-    const minister = mapPersonToMinister(record, locationMap);
+    const rank = directoryRankOf(record.positions);
+    if (!rank) continue;
+    const minister = mapPersonToMinister(record, locationMap, rank);
     if (!minister) continue;
 
     if (!byRank.has(minister.positionType)) {
