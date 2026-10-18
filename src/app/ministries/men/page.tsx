@@ -15,6 +15,9 @@ import { CmsMinistryHeroText } from "@/components/cms/CmsPageSections";
 
 const PAGE_ROUTE = "ministries/men";
 
+/** Used until a banner is uploaded on the Men Ministry record in ERPNext. */
+const MEN_HERO_FALLBACK = "/images/banners/ministry-men.jpg";
+
 export const metadata: Metadata = {
   title: "Men's Ministry",
   description:
@@ -60,7 +63,11 @@ export default async function MenMinistryPage() {
   return (
     <>
       <section className="relative h-[240px] overflow-hidden md:h-[320px]">
-        <MinistryHeroMedia src={heroImage} alt="Men's ministry" priority />
+        <MinistryHeroMedia
+          src={heroImage ?? MEN_HERO_FALLBACK}
+          alt="Men's ministry"
+          priority
+        />
         <div className="absolute inset-0 bg-black/60" />
         <div className="absolute inset-0 flex items-end px-4 pb-10 lg:px-16">
           <div className="mx-auto w-full max-w-[1100px]">

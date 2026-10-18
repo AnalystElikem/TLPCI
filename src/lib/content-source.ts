@@ -1270,25 +1270,47 @@ export async function getMinistryLeaders(
       const personId = leaderMinisterIdOf(row);
       if (!personId) return null;
 
-      const person = await erpnextDoc<{
+      type LeaderPerson = {
         full_name?: string;
         custom_title?: string | null;
         photo?: string;
         membership_status?: string | null;
         positions?: PersonPositionRow[];
-      }>("Person", personId);
+      };
+      let person = await erpnextDoc<LeaderPerson>("Person", personId);
+      if (!person) {
+        // Older leader rows were linked to the legacy Ministers records, which
+        // are named by full name rather than a Person ID. Match on full name.
+        const match = await erpnextList<{ name?: string }>("Person", {
+          fields: ["name"],
+          filters: [["full_name", "=", personId]],
+          limit: 1,
+        });
+        const matchedId = match?.[0]?.name;
+        if (matchedId) person = await erpnextDoc<LeaderPerson>("Person", matchedId);
+      }
 
       if (!person?.full_name?.trim() || personMembershipIsInactive(person)) {
         return null;
       }
 
+      const rank = primaryMinisterType(person.positions);
+      // The name already carries the rank (Apostle, Deacon...), so show the
+      // ministry role on its own and only fall back to the rank when that is all there is.
+      const role =
+        personPositionTitles(person.positions)
+          .split(" · ")
+          .map((t) => t.trim())
+          .filter((t) => t && t.toLowerCase() !== rank.toLowerCase())
+          .join(" · ") || ministerTitleOf(person.positions);
+
       return {
         name: personDisplayName(
           person.full_name.trim(),
-          primaryMinisterType(person.positions),
+          rank,
           person.custom_title
         ),
-        role: ministerTitleOf(person.positions),
+        role,
         image:
           absoluteFileUrl(row.image) ??
           absoluteFileUrl(person.photo) ??
