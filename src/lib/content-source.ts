@@ -1326,7 +1326,8 @@ export async function getMinistryLeaders(
         name: personDisplayName(
           person.full_name.trim(),
           rank,
-          person.custom_title
+          person.custom_title,
+          true
         ),
         role,
         image:
