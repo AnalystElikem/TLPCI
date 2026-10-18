@@ -1869,6 +1869,8 @@ export async function getTestimony(id: string): Promise<TestimonyItem | null> {
 export type Minister = {
   id: string;
   name: string;
+  /** Same name with the title abbreviated (Aps., Rev., Ps., Eld.) for cards. */
+  shortName: string;
   positionType: string;
   rank: string;
   office?: string;
@@ -2023,7 +2025,8 @@ function mapMinisterPositions(
 function personDisplayName(
   fullName: string,
   primaryType: string,
-  title?: string | null
+  title?: string | null,
+  abbreviate = false
 ): string {
   let name = fullName.trim();
   const honorific = (title ?? "").trim();
@@ -2035,9 +2038,33 @@ function personDisplayName(
     name = `${honorific} ${name}`;
   }
   if (!name || !primaryType) return name;
+  const full = ministerFormOfAddress(primaryType);
+  const prefix = abbreviate ? MINISTER_TITLE_ABBREVIATIONS[full] ?? full : full;
   const lower = name.toLowerCase();
-  if (lower.startsWith(`${primaryType.toLowerCase()} `)) return name;
-  return `${primaryType} ${name}`;
+  if (
+    lower.startsWith(`${prefix.toLowerCase()} `) ||
+    lower.startsWith(`${full.toLowerCase()} `)
+  ) {
+    return name;
+  }
+  return `${prefix} ${name}`;
+}
+
+/** Short forms used on minister cards. Titles not listed stay in full. */
+const MINISTER_TITLE_ABBREVIATIONS: Record<string, string> = {
+  Apostle: "Aps.",
+  Reverend: "Rev.",
+  Pastor: "Ps.",
+  Elder: "Eld.",
+};
+
+/**
+ * How a minister is addressed in front of their name. It is the rank, except
+ * Senior Pastors, whose official title is "Reverend" (their rank still shows
+ * as "Senior Pastor" under the name).
+ */
+function ministerFormOfAddress(primaryType: string): string {
+  return /^senior pastor$/i.test(primaryType.trim()) ? "Reverend" : primaryType;
 }
 
 function isFrappeYes(value: unknown): boolean {
@@ -2123,6 +2150,12 @@ function mapPersonToMinister(
   const minister: Minister = {
     id: record.name ?? record.full_name.trim(),
     name: personDisplayName(record.full_name.trim(), primaryType, record.custom_title),
+    shortName: personDisplayName(
+      record.full_name.trim(),
+      primaryType,
+      record.custom_title,
+      true
+    ),
     positionType: primaryType,
     rank: ministerRankPlural(primaryType),
   };

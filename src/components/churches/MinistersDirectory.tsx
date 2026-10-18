@@ -28,6 +28,7 @@ export default function MinistersDirectory({
           ? g.ministers.filter(
               (m) =>
                 m.name.toLowerCase().includes(q) ||
+                m.shortName.toLowerCase().includes(q) ||
                 m.branch?.toLowerCase().includes(q) ||
                 m.office?.toLowerCase().includes(q)
             )
@@ -151,7 +152,7 @@ export default function MinistersDirectory({
                           <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-2">
                             <p className="font-bold text-foreground group-hover:text-primary">
-                              {m.name}
+                              {m.shortName}
                             </p>
                             <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-primary opacity-70 transition-opacity group-hover:opacity-100" />
                           </div>

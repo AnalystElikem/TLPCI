@@ -161,7 +161,7 @@ export default async function MinisterDetailPage({ params }: Props) {
                     href={`/churches/pastors/${encodeURIComponent(m.id)}`}
                     className="block border border-border bg-white p-4 shadow-sm transition-colors hover:border-primary"
                   >
-                    <p className="font-bold text-foreground">{m.name}</p>
+                    <p className="font-bold text-foreground">{m.shortName}</p>
                     <p className="mt-1 text-xs font-bold uppercase tracking-wide text-primary">
                       {m.positionType}
                     </p>
