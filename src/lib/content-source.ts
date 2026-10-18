@@ -2060,6 +2060,9 @@ function personDisplayName(
     name = `${honorific} ${name}`;
   }
   if (!name || !primaryType) return name;
+  // Only real ministerial ranks become a prefix. Other position types (for
+  // example a generic "Ministry Leader") leave the name as it is.
+  if (!MINISTER_RANK_ORDER.includes(primaryType.trim())) return name;
   const full = ministerFormOfAddress(primaryType);
   const prefix = abbreviate ? MINISTER_TITLE_ABBREVIATIONS[full] ?? full : full;
   const lower = name.toLowerCase();
