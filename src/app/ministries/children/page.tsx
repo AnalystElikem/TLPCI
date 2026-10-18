@@ -15,18 +15,18 @@ import MinistryRelatedContent from "@/components/ministries/MinistryRelatedConte
 const PAGE_ROUTE = "ministries/children";
 
 export const metadata: Metadata = {
-  title: "Children Ministry",
+  title: "Children's Ministry",
   description:
     "The Children's Ministry of TLPCI — helping children know Jesus through age-appropriate classes, worship, and Bible teaching.",
 };
 
 const classes = [
   { title: "Alpha Class", ages: "Ages 3–5", text: "Nursery & Kindergarten" },
-  { title: "Genesis Class", ages: "Ages 6–8", text: "Basic 1 & 2" },
-  { title: "David Class", ages: "Ages 9–10", text: "Basic 3 & 4" },
-  { title: "John Class", ages: "Ages 10–12", text: "Basic 5 & 6" },
-  { title: "Samuel Class", ages: "Ages 12–14", text: "JHS 1 & 2" },
-  { title: "Timothy Class", ages: "Age 15", text: "JHS 3" },
+  { title: "Genesis Class", ages: "Ages 6–7", text: "Basic 1 & 2" },
+  { title: "David Class", ages: "Ages 8–9", text: "Basic 3 & 4" },
+  { title: "John Class", ages: "Ages 10–11", text: "Basic 5 & 6" },
+  { title: "Samuel Class", ages: "Ages 12–13", text: "JHS 1 & 2" },
+  { title: "Timothy Class", ages: "Ages 14–15", text: "JHS 3" },
 ];
 
 export const revalidate = 300;
