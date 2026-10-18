@@ -1272,6 +1272,7 @@ export async function getMinistryLeaders(
 
       const person = await erpnextDoc<{
         full_name?: string;
+        custom_title?: string | null;
         photo?: string;
         membership_status?: string | null;
         positions?: PersonPositionRow[];
@@ -1284,7 +1285,8 @@ export async function getMinistryLeaders(
       return {
         name: personDisplayName(
           person.full_name.trim(),
-          primaryMinisterType(person.positions)
+          primaryMinisterType(person.positions),
+          person.custom_title
         ),
         role: ministerTitleOf(person.positions),
         image:
@@ -1579,7 +1581,7 @@ export const getLeadership = cache(async function getLeadership(): Promise<Leade
       const goType = primaryMinisterType(goRecord.positions);
       generalOverseer = {
         ...(fallbackGO as LeaderGO),
-        name: personDisplayName(goRecord.full_name.trim(), goType),
+        name: personDisplayName(goRecord.full_name.trim(), goType, goRecord.custom_title),
         role: personExecutiveRoleOf(goRecord) || fallbackGO.role,
         image: absoluteFileUrl(goRecord.photo) ?? fallbackGO.image,
         bio: fallbackGO.bio as string[],
@@ -1593,7 +1595,8 @@ export const getLeadership = cache(async function getLeadership(): Promise<Leade
           name: personDisplayName(
             record.full_name!.trim(),
             // "Council Member" is a seat, not a title — don't print it as one.
-            councilTitleOf(primaryMinisterType(record.positions))
+            councilTitleOf(primaryMinisterType(record.positions)),
+            record.custom_title
           ),
           role: personExecutiveRoleOf(record),
           image: absoluteFileUrl(record.photo) ?? "",
@@ -1895,6 +1898,8 @@ export type MinisterDetail = Minister & {
 type PersonMinisterRecord = {
   name?: string;
   full_name?: string;
+  /** Optional honorific from the Person "Title" field (Dr., Prof., ...). */
+  custom_title?: string | null;
   photo?: string;
   custom_location?: string;
   custom_is_executive?: number | boolean | string;
@@ -2011,8 +2016,24 @@ function mapMinisterPositions(
   }));
 }
 
-function personDisplayName(fullName: string, primaryType: string): string {
-  const name = fullName.trim();
+/**
+ * "Rank [Title] Name", e.g. "Apostle Dr. Christopher K. Sokpor".
+ * `title` is the optional Title field on the Person record (Dr., Prof., ...).
+ */
+function personDisplayName(
+  fullName: string,
+  primaryType: string,
+  title?: string | null
+): string {
+  let name = fullName.trim();
+  const honorific = (title ?? "").trim();
+  if (
+    name &&
+    honorific &&
+    !name.toLowerCase().startsWith(`${honorific.toLowerCase()} `)
+  ) {
+    name = `${honorific} ${name}`;
+  }
   if (!name || !primaryType) return name;
   const lower = name.toLowerCase();
   if (lower.startsWith(`${primaryType.toLowerCase()} `)) return name;
@@ -2101,7 +2122,7 @@ function mapPersonToMinister(
 
   const minister: Minister = {
     id: record.name ?? record.full_name.trim(),
-    name: personDisplayName(record.full_name.trim(), primaryType),
+    name: personDisplayName(record.full_name.trim(), primaryType, record.custom_title),
     positionType: primaryType,
     rank: ministerRankPlural(primaryType),
   };
@@ -2160,6 +2181,7 @@ const fetchChurchLocationMap = cache(async function fetchChurchLocationMap(): Pr
 type PersonListRow = {
   name?: string;
   full_name?: string;
+  custom_title?: string | null;
   photo?: string;
   custom_location?: string;
   custom_is_executive?: number | boolean | string;
@@ -2213,6 +2235,7 @@ function normalizePersonListRows(rows: PersonListRow[]): PersonMinisterRecord[] 
     byName.set(id, {
       name: id,
       full_name: row.full_name,
+      custom_title: row.custom_title,
       photo: row.photo,
       custom_location: row.custom_location,
       custom_is_executive: row.custom_is_executive,
@@ -2226,10 +2249,18 @@ function normalizePersonListRows(rows: PersonListRow[]): PersonMinisterRecord[] 
 }
 
 async function loadMinisterPersonRecordsFromErp(): Promise<PersonMinisterRecord[]> {
-  const rows = await erpnextList<PersonListRow>("Person", {
-    fields: [...PERSON_LIST_FIELDS],
+  // Ask for the optional Title field too. If it has not been added in ERPNext
+  // yet the request fails, so retry without it rather than losing the list.
+  let rows = await erpnextList<PersonListRow>("Person", {
+    fields: [...PERSON_LIST_FIELDS, "custom_title"],
     orderBy: "full_name asc",
   });
+  if (!rows) {
+    rows = await erpnextList<PersonListRow>("Person", {
+      fields: [...PERSON_LIST_FIELDS],
+      orderBy: "full_name asc",
+    });
+  }
   if (!rows?.length) return [];
 
   return normalizePersonListRows(rows).filter(shouldIncludePersonRecord);
