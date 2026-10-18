@@ -161,12 +161,12 @@ export default async function StudentsMinistryPage() {
       {/* Stay rooted — illustrated */}
       <section className="bg-muted-surface">
         <div className="mx-auto grid max-w-[1200px] items-stretch lg:grid-cols-2">
-          <div className="relative min-h-[300px] lg:min-h-full">
+          <div className="relative min-h-[300px] lg:order-2 lg:min-h-full">
             <Image
-              src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80"
-              alt="Students in fellowship"
+              src="/images/ministries/students-rooted-on-campus.jpg"
+              alt="Three TELPSAM students smiling together in their TELPSAM shirts"
               fill
-              className="object-cover"
+              className="object-cover object-center"
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
           </div>

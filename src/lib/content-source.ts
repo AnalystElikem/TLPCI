@@ -1286,7 +1286,25 @@ export async function getMinistryLeaders(
           filters: [["full_name", "=", personId]],
           limit: 1,
         });
-        const matchedId = match?.[0]?.name;
+        let matchedId = match?.[0]?.name;
+        if (!matchedId) {
+          // Legacy names often carry a title ("Dr. Edem Sokpor"); the Person
+          // record holds the name alone, so retry without the leading title.
+          const bare = personId
+            .replace(
+              /^(?:(?:Dr|Prof|Hon|Engr|Mr|Mrs|Ms|Rev|Ps|Apostle|Reverend|Pastor|Elder|Deacon|Deaconess|Mama|Miss)\.?\s+)+/i,
+              ""
+            )
+            .trim();
+          if (bare && bare !== personId) {
+            const retry = await erpnextList<{ name?: string }>("Person", {
+              fields: ["name"],
+              filters: [["full_name", "=", bare]],
+              limit: 1,
+            });
+            matchedId = retry?.[0]?.name;
+          }
+        }
         if (matchedId) person = await erpnextDoc<LeaderPerson>("Person", matchedId);
       }
 
