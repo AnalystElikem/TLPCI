@@ -1,132 +1,64 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, FileText } from "lucide-react";
-import {
-  blogPostPath,
-  eventPath,
-  getMinistryBlogPosts,
-  getMinistryEvents,
-  type BlogPost,
-  type EventItem,
-} from "@/lib/content-source";
+import { blogPostPath, getMinistryBlogPosts } from "@/lib/content-source";
 
-function EventCard({ event }: { event: EventItem }) {
-  return (
-    <Link
-      href={eventPath(event.id)}
-      className="group card-shadow block overflow-hidden transition-all hover:shadow-md"
-    >
-      {event.poster ? (
-        <div className="relative aspect-[16/10] overflow-hidden bg-muted-surface">
-          <Image
-            src={event.poster}
-            alt={event.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-            sizes="(max-width: 768px) 100vw, 400px"
-          />
-        </div>
-      ) : null}
-      <div className="px-5 py-5 md:px-6">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary">
-          <CalendarDays className="h-3.5 w-3.5" />
-          {event.date}
-          {event.time ? ` · ${event.time}` : ""}
-        </p>
-        <h3 className="mt-2 font-serif text-lg font-bold text-foreground group-hover:text-primary">
-          {event.title}
-        </h3>
-        {event.location && (
-          <p className="mt-1 text-sm text-text-muted">{event.location}</p>
-        )}
-        <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-primary">
-          View event
-          <ArrowRight className="h-3 w-3" />
-        </span>
-      </div>
-    </Link>
-  );
-}
-
-function BlogCard({ post }: { post: BlogPost }) {
-  return (
-    <Link
-      href={blogPostPath(post.id)}
-      className="group card-shadow block overflow-hidden transition-all hover:shadow-md"
-    >
-      <div className="relative aspect-[16/10] overflow-hidden bg-muted-surface">
-        <Image
-          src={post.image}
-          alt={post.title}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-          sizes="(max-width: 768px) 100vw, 400px"
-        />
-      </div>
-      <div className="px-5 py-5 md:px-6">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary">
-          <FileText className="h-3.5 w-3.5" />
-          {post.category} · {post.date}
-        </p>
-        <h3 className="mt-2 font-serif text-lg font-bold text-foreground group-hover:text-primary">
-          {post.title}
-        </h3>
-        {post.excerpt && (
-          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-text-muted">
-            {post.excerpt}
-          </p>
-        )}
-        <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-primary">
-          Read post
-          <ArrowRight className="h-3 w-3" />
-        </span>
-      </div>
-    </Link>
-  );
-}
-
+/**
+ * One large "Latest news" card for a ministry or fellowship page.
+ * Shows the newest published post linked to the ministry; renders nothing
+ * when the ministry has no news yet.
+ */
 export default async function MinistryRelatedContent({
   ministry,
 }: {
   ministry: string;
 }) {
-  const [events, posts] = await Promise.all([
-    getMinistryEvents(ministry),
-    getMinistryBlogPosts(ministry),
-  ]);
-
-  if (!events.length && !posts.length) return null;
+  const posts = await getMinistryBlogPosts(ministry);
+  const post = posts[0];
+  if (!post) return null;
 
   return (
     <section className="bg-muted-surface py-14 lg:py-20">
       <div className="mx-auto max-w-[1100px] px-4 lg:px-8">
-        {events.length > 0 && (
-          <div>
-            <span className="section-accent" />
-            <h2 className="font-serif text-2xl font-bold text-foreground md:text-3xl">
-              Upcoming events
+        <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
+          Latest news
+        </p>
+        <article className="mt-4 grid overflow-hidden bg-white shadow-sm lg:grid-cols-[1.2fr_1fr]">
+          <Link
+            href={blogPostPath(post.id)}
+            className="relative block min-h-[240px] lg:min-h-[380px]"
+            aria-label={post.title}
+          >
+            <Image
+              src={post.image}
+              alt={post.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 600px"
+            />
+          </Link>
+          <div className="flex flex-col justify-center p-6 md:p-10">
+            <p className="text-xs font-bold uppercase tracking-wide text-primary">
+              {[post.category, post.date].filter(Boolean).join(" · ")}
+            </p>
+            {post.blogger && (
+              <p className="mt-2 text-sm text-text-muted">By {post.blogger}</p>
+            )}
+            <h2 className="mt-3 font-serif text-2xl font-bold leading-snug text-foreground md:text-3xl">
+              {post.title}
             </h2>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {events.map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
+            {post.excerpt && (
+              <p className="mt-4 line-clamp-4 leading-relaxed text-text-muted">
+                {post.excerpt}
+              </p>
+            )}
+            <Link
+              href={blogPostPath(post.id)}
+              className="mt-6 inline-block text-xs font-bold uppercase tracking-wide text-primary hover:underline"
+            >
+              Read story →
+            </Link>
           </div>
-        )}
-
-        {posts.length > 0 && (
-          <div className={events.length > 0 ? "mt-14" : ""}>
-            <span className="section-accent" />
-            <h2 className="font-serif text-2xl font-bold text-foreground md:text-3xl">
-              Latest news
-            </h2>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {posts.map((post) => (
-                <BlogCard key={post.id} post={post} />
-              ))}
-            </div>
-          </div>
-        )}
+        </article>
       </div>
     </section>
   );
