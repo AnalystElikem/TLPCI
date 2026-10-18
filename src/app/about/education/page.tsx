@@ -12,7 +12,13 @@ export const metadata: Metadata = {
     "The Lord's Academy basic schools, the ISOM-affiliated Bible training school (TLLBTS), and a scholarship scheme supporting hundreds of students — how TLPCI invests in education.",
 };
 
-const academyLocations = ["Kwashieman", "Ashaiman"];
+const academyLocations = [
+  "Kwashieman",
+  "Ashaiman",
+  "Juapong",
+  "Ningo",
+  "Kumasi",
+];
 
 const programmes = ["Certificate", "Diploma", "Degree", "Masters"];
 
@@ -60,13 +66,14 @@ export default async function EducationPage() {
       {/* The Lord's Academy */}
       <section className="bg-muted-surface py-14 lg:py-20">
         <div className="mx-auto grid max-w-[1100px] items-center gap-10 px-4 lg:grid-cols-2 lg:gap-16 lg:px-8">
-          <div className="relative order-last min-h-[280px] overflow-hidden shadow-sm lg:order-first lg:min-h-[380px]">
+          <div className="relative order-last flex min-h-[280px] items-center justify-center overflow-hidden border border-border bg-white p-8 shadow-sm lg:order-first lg:min-h-[380px] lg:p-12">
             <Image
-              src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1200&q=80"
-              alt="The Lord's Academy"
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              src="/images/brand/lords-academy-logo.svg"
+              alt="The Lord's Academy logo: Truth, Knowledge & Wisdom"
+              width={640}
+              height={473}
+              className="h-auto w-full max-w-[460px]"
+              unoptimized
             />
           </div>
           <div>
@@ -98,9 +105,6 @@ export default async function EducationPage() {
                     {loc}
                   </span>
                 ))}
-                <span className="inline-flex items-center px-3 py-1.5 text-sm italic text-text-muted">
-                  and more across the nation
-                </span>
               </div>
             </div>
             <Link href="/contact" className="btn btn-primary mt-8">
