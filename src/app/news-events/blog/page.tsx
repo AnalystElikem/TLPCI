@@ -1,5 +1,5 @@
+import ContentImage from "@/components/ui/ContentImage";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { blogPostPath, getBlogPosts } from "@/lib/content-source";
 import { getWebPageSection } from "@/lib/web-page-content";
@@ -57,7 +57,7 @@ export default async function BlogPage() {
           </p>
           <article className="mt-4 grid overflow-hidden bg-white shadow-sm lg:grid-cols-[1.3fr_1fr]">
             <div className="relative min-h-[260px] lg:min-h-[380px]">
-              <Image
+              <ContentImage
                 src={featured.image}
                 alt={featured.title}
                 fill
@@ -106,7 +106,7 @@ export default async function BlogPage() {
                   className="group block"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden bg-surface">
-                    <Image
+                    <ContentImage
                       src={item.image}
                       alt={item.title}
                       fill

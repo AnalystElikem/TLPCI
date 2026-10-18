@@ -1,4 +1,4 @@
-import Image from "next/image";
+import ContentImage from "@/components/ui/ContentImage";
 import Link from "next/link";
 import { blogPostPath, getMinistryBlogPosts } from "@/lib/content-source";
 
@@ -28,7 +28,7 @@ export default async function MinistryRelatedContent({
             className="relative block min-h-[240px] lg:min-h-[380px]"
             aria-label={post.title}
           >
-            <Image
+            <ContentImage
               src={post.image}
               alt={post.title}
               fill

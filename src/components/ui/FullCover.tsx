@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ImagePlaceholder, isValidImageSrc } from "@/components/ui/ContentImage";
 
 /**
  * Blurred copy of a photo, used as a header backdrop so the real photo never
@@ -9,9 +10,11 @@ export function BlurredBackdrop({
   src,
   priority = false,
 }: {
-  src: string;
+  src?: string | null;
   priority?: boolean;
 }) {
+  // No cover image: leave the plain dark header, no blurred copy.
+  if (!isValidImageSrc(src)) return null;
   return (
     <Image
       src={src}
@@ -36,12 +39,20 @@ export default function FullCover({
   sizes = "(max-width: 900px) 100vw, 900px",
   priority = false,
 }: {
-  src: string;
+  src?: string | null;
   alt: string;
   aspectClass?: string;
   sizes?: string;
   priority?: boolean;
 }) {
+  // No cover image: show the church logo on the soft branded background.
+  if (!isValidImageSrc(src)) {
+    return (
+      <div className={`relative w-full overflow-hidden shadow-md ${aspectClass}`}>
+        <ImagePlaceholder className="absolute inset-0" />
+      </div>
+    );
+  }
   return (
     <div
       className={`relative w-full overflow-hidden bg-foreground shadow-md ${aspectClass}`}

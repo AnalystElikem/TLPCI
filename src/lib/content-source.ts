@@ -59,13 +59,6 @@ function fmtLong(d?: string | null): string {
     : "";
 }
 
-// Safe default images (already allow-listed hosts) used only if an ERPNext
-// record is missing its image.
-const DEFAULT_NEWS_IMAGE =
-  "https://images.unsplash.com/photo-1524230572899-a752b3835840?w=1200&q=80";
-const DEFAULT_SERMON_IMAGE =
-  "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1200&q=80";
-
 // --------------------------------------------------------------------- Events
 export type EventItem = {
   id: number | string;
@@ -721,7 +714,7 @@ function mapBlogPostRow(
     category:
       categories.get(categoryKey) ?? formatCategoryLabel(categoryKey),
     excerpt: r.blog_intro ?? "",
-    image: absoluteFileUrl(r.meta_image) ?? DEFAULT_NEWS_IMAGE,
+    image: absoluteFileUrl(r.meta_image) ?? "",
     body: absolutizeHtmlFileUrls(r.content),
     blogger: bloggers.get(r.blogger ?? "") ?? r.blogger ?? "",
     route: r.route ?? "",
@@ -846,7 +839,7 @@ function sermonImageOf(
     absoluteFileUrl(r.custom_sermon_image) ??
     absoluteFileUrl(r.thumbnail ?? r.image ?? r.cover_image) ??
     absoluteFileUrl(person?.photo) ??
-    DEFAULT_SERMON_IMAGE
+    ""
   );
 }
 

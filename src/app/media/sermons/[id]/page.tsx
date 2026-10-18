@@ -99,7 +99,7 @@ export default async function SermonDetailPage({ params }: Props) {
         </div>
       </section>
 
-      {!youtubeId && sermon.image && (
+      {!youtubeId && (
         <section className="bg-muted-surface py-10 lg:py-14">
           <div className="mx-auto max-w-[900px] px-4 lg:px-8">
             <FullCover src={sermon.image} alt={sermon.title} />

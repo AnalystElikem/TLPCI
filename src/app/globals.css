@@ -228,63 +228,8 @@ body {
   );
 }
 
-.hero-auditorium {
-  background:
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.28)),
-    url("https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1600&q=80")
-      center / cover no-repeat;
-}
-
 .testimony-hero {
   background-color: #3a050c;
-}
-
-.card-thumb-1 {
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
-    url("https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=400&q=70")
-      center / cover no-repeat;
-}
-
-.card-thumb-2 {
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
-    url("https://images.unsplash.com/photo-1507692049790-de58290a4334?w=400&q=70")
-      center / cover no-repeat;
-}
-
-.card-thumb-3 {
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
-    url("https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&q=70")
-      center / cover no-repeat;
-}
-
-.card-thumb-4 {
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
-    url("https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&q=70")
-      center / cover no-repeat;
-}
-
-.feature-bg-1 {
-  background: url("https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80")
-    center / cover no-repeat;
-}
-
-.feature-bg-2 {
-  background: url("https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800&q=80")
-    center / cover no-repeat;
-}
-
-.feature-bg-3 {
-  background: url("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80")
-    center / cover no-repeat;
-}
-
-.feature-bg-4 {
-  background: url("https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&q=80")
-    center / cover no-repeat;
 }
 
 /* Rich-text article body — styles the sanitized HTML injected on news detail

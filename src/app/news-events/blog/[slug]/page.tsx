@@ -1,5 +1,5 @@
+import ContentImage from "@/components/ui/ContentImage";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -104,7 +104,7 @@ export default async function BlogPostPage({ params }: Props) {
                   className="group block overflow-hidden bg-white shadow-sm"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
+                    <ContentImage
                       src={n.image}
                       alt={n.title}
                       fill

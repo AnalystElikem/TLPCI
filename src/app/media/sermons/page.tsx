@@ -1,5 +1,5 @@
+import ContentImage from "@/components/ui/ContentImage";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { Play, BookOpen, User, Clock } from "lucide-react";
 import SermonMediaActions from "@/components/sermons/SermonMediaActions";
@@ -64,7 +64,7 @@ export default async function SermonsPage() {
           </p>
           <article className="mt-4 grid overflow-hidden bg-white shadow-sm lg:grid-cols-[1.2fr_1fr]">
             <div className="relative min-h-[260px] lg:min-h-[360px]">
-              <Image
+              <ContentImage
                 src={featured.image}
                 alt={featured.title}
                 fill
@@ -128,7 +128,7 @@ export default async function SermonsPage() {
                   className="group grid gap-4 py-5 transition-colors hover:bg-muted-surface sm:grid-cols-[140px_1fr_auto] sm:items-center sm:gap-6 sm:px-2"
                 >
                   <div className="relative aspect-video overflow-hidden bg-surface sm:aspect-[4/3]">
-                    <Image
+                    <ContentImage
                       src={sermon.image}
                       alt=""
                       fill

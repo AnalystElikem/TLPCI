@@ -1,4 +1,4 @@
-import Image from "next/image";
+import ContentImage from "@/components/ui/ContentImage";
 import Link from "next/link";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { blogPostPath, type BlogPost } from "@/lib/content-source";
@@ -31,7 +31,7 @@ export default function BottomColumns({ news }: { news?: BlogPost[] }) {
                   className="card-shadow group overflow-hidden transition-shadow hover:shadow-md"
                 >
                   <div className="relative h-48 overflow-hidden">
-                    <Image
+                    <ContentImage
                       src={item.image}
                       alt={item.title}
                       fill
