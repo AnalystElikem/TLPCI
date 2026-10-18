@@ -55,7 +55,7 @@ export default async function MusicMinistryPage() {
     <>
       <section className="relative h-[240px] overflow-hidden md:h-[320px]">
         <MinistryHeroMedia src={heroImage} alt="Music ministry" priority />
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
         <div className="absolute inset-0 flex items-end px-4 pb-10 lg:px-16">
           <div className="mx-auto w-full max-w-[1100px]">
             <CmsMinistryHeroText
