@@ -77,7 +77,7 @@ rebuild. See §7.
 | Events, News, Sermons, Testimonies, Gallery, Leadership people | **ERPNext** (`new---tlpci.nvi.frappe.cloud`), see §7 |
 | Order of the Executive Council on the Leadership page | `src/lib/content-source.ts` (`COUNCIL_ROLE_ORDER`), see §7 |
 | Form submissions (Contact, Prayer, Visit, Testimony, Newsletter) | **ERPNext**, see §9 |
-| Social-share preview image | `public/og-image.jpg` |
+| Social-share preview image | `public/og-share.jpg` |
 | Site icon (favicon) & logo | `public/tlpci-logo.png` |
 | All photos | `public/images/…` (see §2 and `public/images/README.md`) |
 

@@ -23,8 +23,14 @@ const merriweather = Merriweather({
   weight: ["400", "700"],
 });
 
+// Link previews cut descriptions after about 100 characters, so the first
+// sentence has to say something useful without repeating the church name.
 const description =
-  "The Lord's Pentecostal Church International — a Pentecostal family reaching Ghana and the nations with the gospel of Jesus Christ. Join us for worship, Bible study, and spiritual growth.";
+  "A Pentecostal family in Ghana sharing the gospel of Jesus Christ with the nations. Join us for worship, Bible study and spiritual growth.";
+
+// Link previews often crop the share image to a centred square, so the logo
+// and name sit in the middle. New file name so apps drop their old cached copy.
+const SHARE_IMAGE = "/og-share.jpg";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -43,13 +49,13 @@ export const metadata: Metadata = {
     title: CHURCH_NAME,
     description,
     url: SITE_URL,
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: CHURCH_NAME }],
+    images: [{ url: SHARE_IMAGE, width: 1200, height: 630, alt: CHURCH_NAME }],
   },
   twitter: {
     card: "summary_large_image",
     title: CHURCH_NAME,
     description,
-    images: ["/og-image.jpg"],
+    images: [SHARE_IMAGE],
   },
 };
 
