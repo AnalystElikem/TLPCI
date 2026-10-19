@@ -98,7 +98,7 @@ export default async function BlogPage() {
             <h2 className="text-xl font-bold uppercase text-foreground md:text-2xl">
               More news
             </h2>
-            <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {rest.map((item) => (
                 <Link
                   key={item.id}
@@ -111,7 +111,7 @@ export default async function BlogPage() {
                       alt={item.title}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                   </div>
                   <p className="mt-4 text-[11px] font-bold uppercase tracking-wide text-primary">
@@ -120,7 +120,7 @@ export default async function BlogPage() {
                   <h3 className="mt-2 text-lg font-bold leading-snug text-foreground group-hover:text-primary">
                     {item.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-text-muted">
+                  <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-text-muted">
                     {item.excerpt}
                   </p>
                 </Link>
