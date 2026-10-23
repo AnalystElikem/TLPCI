@@ -462,6 +462,23 @@ removed, and `/get-involved/give` redirects away. To enable online giving later,
 we'll wire a Ghana provider (Mobile Money via Paystack/Hubtel) with server-side
 verification and restore the page.
 
+**Security policy (report only).** The site sends a Content-Security-Policy in
+"report only" mode: browsers compare every page with a list of allowed sources
+and quietly report anything outside it, but nothing is blocked. Reports appear in
+Vercel > your project > Logs (search for `csp-violation`). Each line says which
+rule was hit (`directive`), what was refused (`blocked`) and on which page
+(`page`). If a new embed or service is added to the site (a new video host, a
+new map, a new form tool), add its address to the list in `next.config.ts`.
+After a few weeks with no unexpected lines, ask me to switch it from report-only
+to enforcing.
+
+**Rich text is cleaned before display.** News posts, sermon notes and testimonies
+pass through an allow-list cleaner (`src/lib/sanitize.ts`). Normal formatting
+(headings, bold, lists, links, images, tables) is kept. Scripts, embedded frames,
+forms, inline styles and unusual link types are removed. If something you pasted
+into ERPNext does not show on the site (for example a YouTube embed inside a post),
+this is why; use the Sermon video field or ask me to add that source.
+
 ---
 
 ## 10. Things best left to a developer (me)
