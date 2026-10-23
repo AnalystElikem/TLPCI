@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { resetTurnstile } from "@/lib/turnstile-client";
 import type { FormEvent } from "react";
 
 type Options = {
@@ -37,6 +38,7 @@ export function useContactSubmit(options: Options = {}) {
     } catch {
       setError(true);
     } finally {
+      resetTurnstile();
       setSubmitting(false);
     }
   }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { resetTurnstile } from "@/lib/turnstile-client";
 import type { FormEvent } from "react";
 
 export function usePlanVisitSubmit() {
@@ -31,6 +32,7 @@ export function usePlanVisitSubmit() {
     } catch {
       setError(true);
     } finally {
+      resetTurnstile();
       setSubmitting(false);
     }
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import TurnstileWidget from "@/components/ui/TurnstileWidget";
 import FormSuccess from "@/components/get-involved/FormSuccess";
 import PhoneInput from "@/components/get-involved/PhoneInput";
 import { useTestimonySubmit } from "@/lib/useTestimonySubmit";
@@ -149,6 +150,7 @@ export default function ShareTestimonyForm() {
         <p className="text-sm text-primary sm:col-span-2">{errorMessage}</p>
       )}
 
+      <TurnstileWidget />
       <button
         type="submit"
         disabled={submitting}

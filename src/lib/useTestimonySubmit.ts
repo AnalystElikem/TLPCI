@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { resetTurnstile } from "@/lib/turnstile-client";
 import type { FormEvent } from "react";
 
 export function useTestimonySubmit() {
@@ -40,6 +41,7 @@ export function useTestimonySubmit() {
     } catch {
       setError("generic");
     } finally {
+      resetTurnstile();
       setSubmitting(false);
     }
   }

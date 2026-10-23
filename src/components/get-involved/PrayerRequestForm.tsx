@@ -1,6 +1,7 @@
 "use client";
 
 import FormSuccess from "./FormSuccess";
+import TurnstileWidget from "@/components/ui/TurnstileWidget";
 import PrayerTypeSelect from "./PrayerTypeSelect";
 import { usePrayerRequestSubmit } from "@/lib/usePrayerRequestSubmit";
 import type { PrayerRequestTypeOption } from "@/lib/prayer-request-submit";
@@ -82,6 +83,7 @@ export default function PrayerRequestForm({
           Sorry, something went wrong. Please try again in a moment.
         </p>
       )}
+      <TurnstileWidget />
       <button
         type="submit"
         disabled={submitting}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { resetTurnstile } from "@/lib/turnstile-client";
 import type { FormEvent } from "react";
 
 export function useEventSignUp() {
@@ -36,6 +37,7 @@ export function useEventSignUp() {
     } catch {
       setError("generic");
     } finally {
+      resetTurnstile();
       setSubmitting(false);
     }
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import BranchSelect from "./BranchSelect";
+import TurnstileWidget from "@/components/ui/TurnstileWidget";
 import FormSuccess from "./FormSuccess";
 import PhoneInput from "./PhoneInput";
 import { usePlanVisitSubmit } from "@/lib/usePlanVisitSubmit";
@@ -85,6 +86,7 @@ export default function PlanVisitForm({ network }: { network: RegionGroup[] }) {
           Sorry, something went wrong. Please try again in a moment.
         </p>
       )}
+      <TurnstileWidget />
       <button
         type="submit"
         disabled={submitting}

@@ -1,6 +1,7 @@
 "use client";
 
 import FormSuccess from "./FormSuccess";
+import TurnstileWidget from "@/components/ui/TurnstileWidget";
 import PhoneInput from "./PhoneInput";
 import FeedbackTypeSelect from "./FeedbackTypeSelect";
 import { useContactSubmit } from "@/lib/useContactSubmit";
@@ -94,6 +95,7 @@ export default function VolunteerForm({ areas }: { areas: string[] }) {
           Sorry, something went wrong. Please try again in a moment.
         </p>
       )}
+      <TurnstileWidget />
       <button
         type="submit"
         disabled={submitting}

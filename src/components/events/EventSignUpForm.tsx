@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import TurnstileWidget from "@/components/ui/TurnstileWidget";
 import FormSuccess from "@/components/get-involved/FormSuccess";
 import PhoneInput from "@/components/get-involved/PhoneInput";
 import { useEventSignUp } from "@/lib/useEventSignUp";
@@ -212,6 +213,7 @@ export default function EventSignUpForm({
         <p className="text-sm text-primary sm:col-span-2">{errorMessage}</p>
       )}
 
+      <TurnstileWidget />
       <button
         type="submit"
         disabled={submitting}

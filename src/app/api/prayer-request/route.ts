@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { verifyTurnstile } from "@/lib/turnstile";
 import {
   submitPrayerRequest,
   validatePrayerRequestInput,
@@ -41,6 +42,10 @@ export async function POST(req: Request) {
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (rateLimited(ip)) {
     return NextResponse.json({ ok: false, error: "rate" }, { status: 429 });
+  }
+
+  if (!(await verifyTurnstile(form, ip))) {
+    return NextResponse.json({ ok: false, error: "captcha" }, { status: 400 });
   }
 
   const input = {

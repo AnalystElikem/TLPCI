@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2 } from "lucide-react";
+import TurnstileWidget from "@/components/ui/TurnstileWidget";
 import { useSubscribeSubmit } from "@/lib/useSubscribeSubmit";
 
 export default function NewsletterForm() {
@@ -37,6 +38,7 @@ export default function NewsletterForm() {
         aria-label="Email address"
         className="field flex-1 border-0 bg-white text-foreground placeholder:text-text-muted"
       />
+      <TurnstileWidget />
       <button
         type="submit"
         disabled={submitting}

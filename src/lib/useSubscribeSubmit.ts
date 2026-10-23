@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { resetTurnstile } from "@/lib/turnstile-client";
 import type { FormEvent } from "react";
 
 export function useSubscribeSubmit() {
@@ -30,6 +31,7 @@ export function useSubscribeSubmit() {
     } catch {
       setError(true);
     } finally {
+      resetTurnstile();
       setSubmitting(false);
     }
   }

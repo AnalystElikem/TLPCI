@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { resetTurnstile } from "@/lib/turnstile-client";
 import type { FormEvent } from "react";
 
 // Submits a form to our own /api/submit route, which creates a Website
@@ -32,6 +33,7 @@ export function useFormSubmit(formType: string) {
     } catch {
       setError(true);
     } finally {
+      resetTurnstile();
       setSubmitting(false);
     }
   }

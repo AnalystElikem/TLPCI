@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { resetTurnstile } from "@/lib/turnstile-client";
 import type { FormEvent } from "react";
 
 export function usePrayerRequestSubmit() {
@@ -30,6 +31,7 @@ export function usePrayerRequestSubmit() {
     } catch {
       setError(true);
     } finally {
+      resetTurnstile();
       setSubmitting(false);
     }
   }

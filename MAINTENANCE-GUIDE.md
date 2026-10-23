@@ -429,7 +429,8 @@ list in ERPNext to read what people sent.
 | Event sign-up | **Function Sign-Up** (plus a Person record) |
 | Newsletter | **Subscribers** and **Email Group Member** |
 
-A honeypot and a rate limit block spam; email and phone are validated. ERPNext on
+A honeypot and a rate limit block spam; email and phone are validated. For
+stronger protection, switch on the Cloudflare Turnstile bot check (below). ERPNext on
 this site has no outgoing email set up, so it does not email anyone when a form
 arrives. Check the lists, or add an ERPNext Notification once an email account is
 configured.
@@ -439,6 +440,22 @@ nothing, so test a form after any change to keys.
 
 **Test records.** Delete any test submission afterwards (Actions > Delete in the
 list). Use an obviously fake email such as `test@example.com`.
+
+**Bot check (Cloudflare Turnstile).** Free, and invisible to real visitors (they
+only see a tick box if Cloudflare is unsure). To switch it on:
+
+1. Sign in at dash.cloudflare.com (a free account is enough) and open **Turnstile**.
+2. **Add widget.** Name it "TLPCI forms". Add the hostnames `www.tlpci.org`,
+   `tlpci.org` and your Vercel preview host (for example `tlpci-three.vercel.app`).
+   Widget mode: **Managed**.
+3. Copy the **Site Key** and the **Secret Key**.
+4. In Vercel > Settings > Environment Variables add `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+   (the site key) and `TURNSTILE_SECRET_KEY` (the secret key, mark it Sensitive).
+5. Redeploy, then send one test message from the Contact page.
+
+To switch it off, delete `TURNSTILE_SECRET_KEY` and redeploy. If Cloudflare is
+ever down, forms still go through; they are only refused when Cloudflare says the
+visitor failed the check. Never share the secret key in chat or email.
 
 **Giving is hidden for now.** The Give page and its menu/footer links are
 removed, and `/get-involved/give` redirects away. To enable online giving later,
