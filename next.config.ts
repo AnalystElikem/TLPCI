@@ -38,10 +38,8 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "plus.unsplash.com" },
-      // Church IT demo Person photos; production uploads use the ERPNext host above.
-      { protocol: "https", hostname: "randomuser.me" },
+      // Only the ERPNext host is allowed (see erpnextPatterns above). Keep this
+      // list short: every host here can be fetched and resized by this site.
       ...erpnextPatterns,
     ],
   },
