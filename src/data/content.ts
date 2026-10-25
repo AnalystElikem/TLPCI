@@ -109,25 +109,25 @@ export const pastOverseers = [
     name: "Apostle John Sam Amedzro",
     note: "Founder & First General Overseer",
     tenure: "1961 – 1972",
-    image: "/images/leadership/past-overseers/amedzro.jpg",
+    image: "/images/leadership/past-overseers/amedzro-v2.jpg",
   },
   {
     name: "Apostle Emmanuel Wuaku",
     note: "Second General Overseer",
     tenure: "1972 – 1993",
-    image: "/images/leadership/past-overseers/wuaku.jpg",
+    image: "/images/leadership/past-overseers/wuaku-v2.jpg",
   },
   {
     name: "Apostle John Timpo",
     note: "Third General Overseer",
     tenure: "1994 – 2004",
-    image: "/images/leadership/past-overseers/timpo.jpg",
+    image: "/images/leadership/past-overseers/timpo-v2.jpg",
   },
   {
     name: "Apostle Richard Buafor",
     note: "Fourth General Overseer",
     tenure: "2005 – 2020",
-    image: "/images/leadership/past-overseers/buafor.jpg",
+    image: "/images/leadership/past-overseers/buafor-v2.jpg",
   },
 ];
 

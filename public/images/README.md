@@ -16,7 +16,7 @@ images/
 ├── leadership/
 │   ├── general-overseer.jpg        ← in use (Apostle Eric E. A. Otoo)
 │   └── past-overseers/
-│       ├── amedzro.jpg  wuaku.jpg  timpo.jpg  buafor.jpg   ← in use
+│       ├── amedzro-v2.jpg  wuaku-v2.jpg  timpo-v2.jpg  buafor-v2.jpg   ← in use
 │
 └── ministries/
     ├── children/

@@ -85,7 +85,7 @@ export default async function OurStoryPage() {
             </span>
             <div className="relative h-[220px] w-[165px] shrink-0 overflow-hidden ring-4 ring-white/90 md:h-[280px] md:w-[210px]">
               <Image
-                src="/images/leadership/past-overseers/amedzro.jpg"
+                src="/images/leadership/past-overseers/amedzro-v2.jpg"
                 alt="Apostle John Sam Amedzro, founder of the church"
                 fill
                 className="object-cover"

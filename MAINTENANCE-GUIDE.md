@@ -132,7 +132,7 @@ a broken image.
 | Photo | Location |
 |---|---|
 | General Overseer portrait | `public/images/leadership/general-overseer.jpg` |
-| Past overseers | `public/images/leadership/past-overseers/amedzro.jpg`, `wuaku.jpg`, `timpo.jpg`, `buafor.jpg` |
+| Past overseers | `public/images/leadership/past-overseers/amedzro-v2.jpg`, `wuaku-v2.jpg`, `timpo-v2.jpg`, `buafor-v2.jpg` |
 | TELPSAM logo | `public/images/brand/telpsam-logo.png` |
 | Jesus The Light Crusade poster | `public/images/ministries/missions/jitl-web.jpg` |
 | The Lord's Hour banner | `public/images/home/lords-hour.jpg` |
