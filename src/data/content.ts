@@ -75,7 +75,7 @@ export const footerLinks = [
 ];
 
 export const churchManagementLink = {
-  label: "Church Management (staff)",
+  label: "Church Management",
   href: "https://churchmanagement.tlpci.org",
 };
 
