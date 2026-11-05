@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 import { CHURCH_LOGO, CHURCH_NAME } from "@/lib/constants";
 import NewsletterForm from "@/components/layout/NewsletterForm";
+import { churchManagementLink, footerLinks } from "@/data/content";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -45,6 +46,27 @@ export default function Footer() {
               <Instagram className="h-5 w-5" />
             </Link>
           </div>
+
+          <nav aria-label="Footer" className="mt-8 border-t border-white/10 pt-6">
+            <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+              {footerLinks.map((link) => (
+                <li key={link.label}>
+                  <Link href={link.href} className="text-white/70 hover:text-white">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <a
+                  href={churchManagementLink.href}
+                  rel="noopener"
+                  className="text-white/70 hover:text-white"
+                >
+                  {churchManagementLink.label}
+                </a>
+              </li>
+            </ul>
+          </nav>
 
           <p className="mt-6 text-sm text-white/60">
             &copy; {currentYear} {CHURCH_NAME}.

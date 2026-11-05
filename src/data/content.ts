@@ -65,6 +65,20 @@ export const navLinks = [
   { label: "Contact", href: "/contact" },
 ];
 
+// Quick links shown in the footer. Church staff tools sit on their own address, so that one is a full web address.
+export const footerLinks = [
+  { label: "Our Story", href: "/about/our-story" },
+  { label: "Find a Church", href: "/churches/find" },
+  { label: "Plan Your Visit", href: "/get-involved/plan-your-visit#plan-visit" },
+  { label: "Prayer Request", href: "/get-involved/prayer-request" },
+  { label: "Contact", href: "/contact" },
+];
+
+export const churchManagementLink = {
+  label: "Church Management (staff)",
+  href: "https://churchmanagement.tlpci.org",
+};
+
 export const generalOverseer = {
   name: "Apostle Eric Essandoh Anim Otoo",
   role: "General Overseer",
